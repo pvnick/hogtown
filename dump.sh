@@ -11,4 +11,4 @@ sudo wp search-replace hogtown-dev.paulnickerson.dev hogtowncatholic.org wp_opti
 # sync content. handle uploads separately because when we sync to prod we want to add upload files, not delete anything in the target uploads folder
 rsync -av --delete --exclude="uploads/" /bitnami/wordpress/wp-content/ wp-content-no-uploads/
 # only sync file uploads to the main wordpress, but ignore plugin-associated uploads
-rsync -av --delete /bitnami/wordpress/wp-content/uploads/ wp-uploads/
+rsync -av --prune-empty-dirs /bitnami/wordpress/wp-content/uploads/20* wp-uploads/
