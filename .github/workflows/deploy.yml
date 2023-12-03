@@ -24,4 +24,5 @@ jobs:
           git config --global user.email 'ci@hogtowncatholic.org'
           git add .
           git commit -m "Uploading migration data [skip ci]"
+          git pull --no-edit
           git push
