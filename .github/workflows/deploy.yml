@@ -12,7 +12,7 @@ jobs:
       with:
         host: hogtown-dev.paulnickerson.dev
         username: bitnami
-        key: ${{ DEV_SERVER_SSH_KEY }}
+        key: ${{ secrets.DEV_SERVER_SSH_KEY }}
         script: |
           echo "Dumping database tables"
           /bitnami/wordpress/wp-content/migration/dump_db.sh
