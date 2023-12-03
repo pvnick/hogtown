@@ -14,5 +14,14 @@ jobs:
         username: bitnami
         key: ${{ secrets.DEV_SERVER_SSH_KEY }}
         script: |
+          cd /bitnami/wordpress/wp-content/
+        
           echo "Dumping database tables"
-          /bitnami/wordpress/wp-content/migration/dump_db.sh
+          ./migration/dump_db.sh
+
+          echo "Pushing changes to git"
+          git config --global user.name 'Hogtown CI'
+          git config --global user.email 'ci@hogtowncatholic.org'
+          git add .
+          git commit -m "Uploading migration data [skip ci]"
+          git push
