@@ -1,4 +1,4 @@
-name: Deploy dev to production
+name: Dump dev website and push to git
 
 on:
   workflow_dispatch:
@@ -14,10 +14,10 @@ jobs:
         username: bitnami
         key: ${{ secrets.DEV_SERVER_SSH_KEY }}
         script: |
-          cd /bitnami/wordpress/wp-content/
+          cd /home/bitnami/hogtown/
         
-          echo "Dumping database tables"
-          ./migration/dump_db.sh
+          echo "Dumping site"
+          ./dump.sh
 
           echo "Pushing changes to git"
           git config --global user.name 'Hogtown CI'
