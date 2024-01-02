@@ -219,9 +219,16 @@ class SystemStatus {
 	public static function getServerInfo() {
 		$sqlMode   = null;
 		$mysqlInfo = aioseo()->core->db->db->get_results( "SHOW VARIABLES LIKE 'sql_mode'" );
-		if ( is_array( $mysqlInfo ) ) {
+		if ( ! empty( $mysqlInfo ) && is_array( $mysqlInfo ) ) {
 			$sqlMode = $mysqlInfo[0]->Value;
 		}
+
+		$dbServerInfo = method_exists( aioseo()->core->db->db, 'db_server_info' )
+			? aioseo()->core->db->db->db_server_info()
+			: ( function_exists( 'mysqli_get_server_info' )
+				? mysqli_get_server_info( aioseo()->core->db->db->dbh ) // phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_get_server_info
+				: ''
+		);
 
 		return [
 			'label'   => __( 'Server Info', 'all-in-one-seo-pack' ),
@@ -240,7 +247,7 @@ class SystemStatus {
 				],
 				[
 					'header' => __( 'Database Powered By', 'all-in-one-seo-pack' ),
-					'value'  => stripos( aioseo()->core->db->db->db_server_info(), 'mariadb' ) !== false ? __( 'MariaDB', 'all-in-one-seo-pack' ) : __( 'MySQL', 'all-in-one-seo-pack' )
+					'value'  => stripos( $dbServerInfo, 'mariadb' ) !== false ? 'MariaDB' : 'MySQL'
 				],
 				[
 					'header' => __( 'Database Version', 'all-in-one-seo-pack' ),
@@ -248,7 +255,7 @@ class SystemStatus {
 				],
 				[
 					'header' => __( 'SQL Mode', 'all-in-one-seo-pack' ),
-					'value'  => empty( $sqlMode ) ? __( 'Not Set', 'all-in-one-seo-pack' ) : $sqlMode
+					'value'  => $sqlMode ?? __( 'Not Set', 'all-in-one-seo-pack' ),
 				],
 				[
 					'header' => __( 'PHP Version', 'all-in-one-seo-pack' ),

@@ -351,8 +351,10 @@ abstract class Filters {
 	 */
 	public function removeInvalidPublicPostTypes( $postTypes ) {
 		$postTypesToRemove = [
-			'fusion_element',
-			'elementor_library'
+			'fusion_element', // Avada
+			'elementor_library',
+			'redirect_rule', // Safe Redirect Manager
+			'seedprod'
 		];
 
 		foreach ( $postTypes as $index => $postType ) {
