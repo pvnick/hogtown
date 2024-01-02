@@ -14,16 +14,20 @@ jobs:
         username: bitnami
         key: ${{ secrets.DEV_SERVER_SSH_KEY }}
         script: |
+          echo "Configuring git credentials"
+          USERID="pvnick"
+          PAT="${{ secrets.REPO_PAT }}"
+          git config --global credential.helper store
+          echo "https://${USERID}:${PAT}@github.com" > ~/.git-credentials
+
+          echo "Resetting the hogtown repo"
           cd /home/bitnami/hogtown/
+          rm -rf hogtown
+          git pull https://github.com/pvnick/hogtown.git
+          cd hogtown
         
           echo "Dumping site"
           ./dump.sh
-
-          echo "Configure git credentials"
-          userid="pvnick"
-          accesstoken="${{ secrets.REPO_PAT }}"
-          git config --local credential.helper store
-          echo "https://${USERID}:${PAT}@github.com/pvnick/hogtown.git" > .git/credentials
 
           echo "Pushing changes to git"
           git config --global user.name 'Hogtown CI'
