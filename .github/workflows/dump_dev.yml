@@ -19,6 +19,12 @@ jobs:
           echo "Dumping site"
           ./dump.sh
 
+          echo "Configure git credentials"
+          userid="pvnick"
+          accesstoken="${{ secrets.REPO_PAT }}"
+          git config --local credential.helper store
+          echo "https://${USERID}:${PAT}@github.com/pvnick/hogtown.git" > .git/credentials
+
           echo "Pushing changes to git"
           git config --global user.name 'Hogtown CI'
           git config --global user.email 'ci@hogtowncatholic.org'
