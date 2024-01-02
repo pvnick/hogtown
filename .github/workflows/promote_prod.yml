@@ -14,6 +14,9 @@ jobs:
         username: bitnami
         key: ${{ secrets.PROD_SERVER_SSH_KEY }}
         script: |
+          echo "Install needed utils"
+          sudo apt-get install rsync git
+
           echo "Configuring git credentials"
           USERID="pvnick"
           PAT="${{ secrets.REPO_PAT }}"
