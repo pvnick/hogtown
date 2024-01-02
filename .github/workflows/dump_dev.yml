@@ -21,7 +21,7 @@ jobs:
           echo "https://${USERID}:${PAT}@github.com" > ~/.git-credentials
 
           echo "Resetting the hogtown repo"
-          cd /home/bitnami/hogtown/
+          cd /home/bitnami/
           rm -rf hogtown
           git pull https://github.com/pvnick/hogtown.git
           cd hogtown
