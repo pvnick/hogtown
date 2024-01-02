@@ -15,7 +15,7 @@ jobs:
         key: ${{ secrets.DEV_SERVER_SSH_KEY }}
         script: |
           echo "Install needed utils"
-          sudo apt-get install rsync git
+          sudo apt-get install -y rsync git
           
           echo "Configuring git credentials"
           USERID="pvnick"
