@@ -10,7 +10,7 @@ jobs:
     - name: Executing remote SSH commands
       uses: appleboy/ssh-action@master
       with:
-        host: 54.146.155.66 #host behind the cloudfront distrobution
+        host: ssh.dev.hogtowncatholic.org
         username: bitnami
         key: ${{ secrets.DEV_SERVER_SSH_KEY }}
         script: |
