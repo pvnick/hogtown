@@ -14,6 +14,9 @@ jobs:
         username: bitnami
         key: ${{ secrets.DEV_SERVER_SSH_KEY }}
         script: |
+          # exit on failure
+          set -e
+
           echo "Install needed utils"
           sudo apt-get install -y rsync git
           
