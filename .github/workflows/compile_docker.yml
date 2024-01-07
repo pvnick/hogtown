@@ -1,0 +1,41 @@
+name: Build hogtown docker image and push to github container registry 
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      # Log in to the GitHub Container Registry
+      - name: Log in to the GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Set up Docker Buildx (optional, but recommended for better performance and build caching)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      # Build and push Docker image to GitHub Container Registry
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/hogtown:latest
+
+      # Post completion of push to registry
+      - name: Image Pushed
+        run: echo "Docker image pushed to GHCR!"
