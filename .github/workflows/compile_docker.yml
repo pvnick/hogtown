@@ -30,7 +30,5 @@ jobs:
         with:
           context: "{{defaultContext}}:docker"
           push: true
-          tags: 
-            - ${{ steps.login-ecr.outputs.registry }}/hogtown:${{ github.sha }}
-            - ${{ steps.login-ecr.outputs.registry }}/hogtown:${{ github.ref_name }}
+          tags: ${{ steps.login-ecr.outputs.registry }}/hogtown:${{ github.sha }},${{ steps.login-ecr.outputs.registry }}/hogtown:${{ github.ref_name }}
 
