@@ -7,9 +7,6 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -31,8 +28,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v5
         with:
-          context: .
-          platforms: linux/amd64
+          context: "{{defaultContext}}:docker"
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/hogtown:latest
 
