@@ -1,7 +1,7 @@
 name: Build hogtown docker image and push to github container registry 
 
 on:
-  workflow_dispatch:
+  push:  # This will trigger the workflow on every push to any branch
 
 jobs:
   build-and-push:
@@ -30,5 +30,7 @@ jobs:
         with:
           context: "{{defaultContext}}:docker"
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/hogtown:${{ github.sha }}
+          tags: 
+            - ${{ steps.login-ecr.outputs.registry }}/hogtown:${{ github.sha }}
+            - ${{ steps.login-ecr.outputs.registry }}/hogtown:${{ github.ref_name }}
 
