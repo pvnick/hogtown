@@ -1,0 +1,138 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Ministry Portal - Hogtown Catholic{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1>Ministry Leader Portal</h1>
+        <p class="lead">Welcome, {{ user.full_name }}! Manage your ministries and events.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Your Ministries</h5>
+                <a href="{% url 'ministry_create' %}" class="btn btn-primary btn-sm">Add New Ministry</a>
+            </div>
+            <div class="card-body">
+                {% for ministry in ministries %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6>{{ ministry.name }}</h6>
+                                <p class="text-muted">{{ ministry.associated_parish.name }}</p>
+                                <p>{{ ministry.description|truncatewords:30 }}</p>
+                                <div class="mb-2">
+                                    {% for category in ministry.categories.all %}
+                                        <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'ministry_edit' ministry.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a href="{% url 'ministry_detail' ministry.pk %}" class="btn btn-sm btn-outline-info">View</a>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Events</h6>
+                                <a href="{% url 'event_create' %}?ministry={{ ministry.pk }}" class="btn btn-sm btn-success">Add Event</a>
+                            </div>
+                            
+                            {% with ministry.event_set.all as events %}
+                                {% if events %}
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Event</th>
+                                                    <th>Type</th>
+                                                    <th>Next/Date</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for event in events %}
+                                                <tr>
+                                                    <td>{{ event.title }}</td>
+                                                    <td>
+                                                        {% if event.is_recurring %}
+                                                            <span class="badge bg-info">Recurring</span>
+                                                        {% else %}
+                                                            <span class="badge bg-success">One-time</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if event.is_recurring %}
+                                                            {{ event.start_time_of_day }}
+                                                        {% else %}
+                                                            {{ event.start_datetime|date:"M j, Y g:i A" }}
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="{% url 'event_edit' event.pk %}" class="btn btn-xs btn-outline-primary">Edit</a>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted small">No events created yet.</p>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">You haven't created any ministries yet.</p>
+                        <a href="{% url 'ministry_create' %}" class="btn btn-primary">Create Your First Ministry</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Account Status</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Status:</strong> 
+                    {% if user.status == 'approved' %}
+                        <span class="badge bg-success">Approved</span>
+                    {% else %}
+                        <span class="badge bg-warning">{{ user.status|title }}</span>
+                    {% endif %}
+                </p>
+                <p><strong>Role:</strong> {{ user.get_role_display }}</p>
+                <p><strong>Associated Parish:</strong> 
+                    {% if user.associated_parish %}
+                        {{ user.associated_parish.name }}
+                    {% else %}
+                        Not assigned
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'ministry_create' %}" class="btn btn-primary">Create Ministry</a>
+                    <a href="{% url 'event_create' %}" class="btn btn-success">Create Event</a>
+                    <a href="{% url 'event_calendar' %}" class="btn btn-info">View Calendar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+### Product Specification: Hogtown Catholic
+
+This document specifies the requirements for a web application named "Hogtown Catholic." The application will serve as a centralized directory for Catholic parishes, ministries, and events within Gainesville, Florida.
+
+---
+
+### 1. System Overview
+
+The system is a database-driven web application with three primary components:
+1.  **A public-facing website:** Allows anonymous users to browse and search for parishes, ministries, and events.
+2.  **A Ministry Leader portal:** A secure area where authenticated users (Ministry Leaders) can manage their specific ministry profiles and post associated events, including single (ad-hoc) and recurring events.
+3.  **An Administrator backend:** A secure area for a site administrator to manage core data and user approvals.
+
+### 2. User Roles & Permissions
+
+There are three distinct user roles with specific permissions:
+
+* **Anonymous User (Public):**
+    * **Can:** View all public pages including the parish directory, individual parish pages, ministry details, and the main event calendar with all event occurrences.
+    * **Can:** Use all filtering and search functionalities.
+    * **Cannot:** Create, edit, or delete any content.
+
+* **Ministry Leader (Authenticated User):**
+    * **Can:** Register for an account (which requires Administrator approval).
+    * **Can:** Log in and out of the system.
+    * **Can:** Create, read, update, and delete ministry profiles *that they own*.
+    * **Can:** Create, read, update, and delete event series (both single and recurring) *associated with their ministries*.
+    * **Cannot:** Modify content belonging to other Ministry Leaders.
+    * **Cannot:** Approve new user registrations.
+    * **Cannot:** Modify the master list of parishes or ministry categories.
+
+* **Administrator (Super User):**
+    * **Can:** Perform all actions of a Ministry Leader.
+    * **Can:** Create, read, update, and delete *all* parishes, ministries, and events.
+    * **Can:** Read and approve pending Ministry Leader registrations.
+    * **Can:** Manage the master list of ministry categories/tags.
+
+### 3. Data Models
+
+The application will be built upon the following data models:
+
+* **Parish**
+    * `parish_id`: (Primary Key) Unique identifier.
+    * `name`: (Text) e.g., "Queen of Peace Catholic Church"
+    * `address`: (Text) Full street address.
+    * `website_url`: (URL) Link to the official parish website.
+    * `phone_number`: (Text)
+    * `mass_schedule`: (Text Block) Formatted text for Mass and Confession times.
+
+* **User** (Represents Ministry Leaders & Admins)
+    * `user_id`: (Primary Key) Unique identifier.
+    * `email`: (Email) Unique, used for login.
+    * `password_hash`: (Text) Hashed and salted password.
+    * `full_name`: (Text)
+    * `associated_parish_id`: (Foreign Key to `Parish`)
+    * `role`: (Enum) 'leader' or 'admin'.
+    * `status`: (Enum) 'pending' or 'approved'.
+
+* **Category** (Represents Ministry Types/Tags)
+    * `category_id`: (Primary Key) Unique identifier.
+    * `name`: (Text) e.g., "Service & Outreach", "Faith Formation".
+
+* **Ministry**
+    * `ministry_id`: (Primary Key) Unique identifier.
+    * `owner_user_id`: (Foreign Key to `User`)
+    * `associated_parish_id`: (Foreign Key to `Parish`)
+    * `name`: (Text) e.g., "Knights of Columbus Council 13900"
+    * `description`: (Text Block)
+    * `contact_info`: (Text)
+    * `categories`: (Many-to-Many relationship with `Category`).
+
+* **Event** (Represents a series, which can be a single ad-hoc event or a recurring event)
+    * `event_id`: (Primary Key) Unique identifier.
+    * `associated_ministry_id`: (Foreign Key to `Ministry`)
+    * `title`: (Text) The name of the event.
+    * `description`: (Text Block) Detailed event description.
+    * `location`: (Text) The address or location description.
+    * `is_recurring`: (Boolean) `false` for ad-hoc events, `true` for recurring events.
+    * **For Ad-Hoc Events (`is_recurring` is false):**
+        * `start_datetime`: (Timestamp) The specific start date and time.
+        * `end_datetime`: (Timestamp) The specific end date and time.
+    * **For Recurring Events (`is_recurring` is true):**
+        * `series_start_date`: (Date) The first date the series can possibly occur.
+        * `series_end_date`: (Date) The last date the series can possibly occur. Can be null for an indefinite series.
+        * `start_time_of_day`: (Time) The start time for each occurrence (e.g., 19:00:00).
+        * `end_time_of_day`: (Time) The end time for each occurrence (e.g., 20:30:00).
+        * `recurrence_rule`: (Text) An iCalendar (RFC 5545) RRULE string. e.g., `FREQ=WEEKLY;BYDAY=TU;UNTIL=20251231T235959Z`.
+
+* **EventException** (Represents a modification to a single occurrence in a recurring series)
+    * `exception_id`: (Primary Key) Unique identifier.
+    * `event_id`: (Foreign Key to `Event`) The recurring series this exception belongs to.
+    * `original_occurrence_date`: (Date) The date of the occurrence that is being modified or cancelled.
+    * `status`: (Enum) 'cancelled', 'rescheduled'.
+    * `new_start_datetime`: (Timestamp) If rescheduled, the new start time. Null otherwise.
+    * `new_end_datetime`: (Timestamp) If rescheduled, the new end time. Null otherwise.
+
+### 4. Application Functionality
+
+#### 4.1. Public Website
+* **Page: Parish Directory & Parish Detail:** Functionality is unchanged.
+* **Page: Event Calendar**
+    * **Calendar Rendering Logic:**
+        1.  The backend must generate a list of all event occurrences within the calendar's visible date range.
+        2.  Fetch all ad-hoc `Event` records where `is_recurring` is false and `start_datetime` is within the range.
+        3.  Fetch all recurring `Event` records where the series is active (`series_start_date` to `series_end_date` overlaps with the calendar range).
+        4.  For each recurring event, parse its `recurrence_rule` to calculate all theoretical occurrence dates within the visible range.
+        5.  For the same recurring events, query the `EventException` table.
+        6.  Apply the exceptions to the theoretical occurrences: remove 'cancelled' dates and replace original dates with 'rescheduled' dates and times.
+        7.  Combine the ad-hoc events and the calculated/modified occurrences into a single list to be rendered on the calendar.
+    * **Filtering:** Functionality is unchanged. It applies to the final combined list of occurrences.
+
+#### 4.2. Ministry Leader Portal
+* **Workflow: Registration & Dashboard:** Functionality is unchanged.
+* **Form: Create/Edit Event**
+    1.  The form must contain all base fields: `title`, `description`, `location`.
+    2.  A checkbox or toggle with the label "This is a recurring event."
+    3.  **If the box is unchecked (Ad-Hoc Event):**
+        * Display two fields: `start_datetime` and `end_datetime` (using a date-time picker).
+    4.  **If the box is checked (Recurring Event):**
+        * Hide the ad-hoc date-time fields.
+        * Display a "Recurrence Rule Builder" UI.
+        * This builder must allow the user to define:
+            * Frequency: (Dropdown) Daily, Weekly, Monthly.
+            * Interval: (Number input) e.g., "Every `2` weeks".
+            * Days of the Week: (Checkbox group) For weekly recurrence.
+            * Series Dates: `series_start_date` and `series_end_date` (using date pickers).
+            * Occurrence Times: `start_time_of_day` and `end_time_of_day` (using time pickers).
+        * The selections from this UI must be translated into a valid RFC 5545 `RRULE` string for storage in the `recurrence_rule` field.
+* **Workflow: Modifying a Recurring Event**
+    * When a Ministry Leader edits or deletes an event occurrence from their dashboard, the system must present a prompt: "Do you want to modify/delete **only this instance** or **the entire series**?"
+    * **If "Only this instance":** Create or update a record in the `EventException` table for the `original_occurrence_date`.
+    * **If "The entire series":** Modify the root `Event` record itself.
+
+#### 4.3. Administrator Functionality
+* Functionality is unchanged. The administrator can manage all records, including the new `Event` and `EventException` tables.
+
+### 5. Non-Functional Requirements
+* **Responsiveness:** The entire application must be fully responsive.
+* **Security:** Standard security practices must be followed (password hashing, input sanitization, CSRF/XSS protection).
+* **Date/Time Handling:** The backend must consistently handle timezones, assuming all user inputs are relative to the local timezone (America/New_York) and storing them in a standardized format (UTC).
