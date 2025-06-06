@@ -4,20 +4,30 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('core', '0001_initial'),
+        ("core", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='requested_ministry_details',
-            field=models.TextField(blank=True, help_text='Description of the ministry they own or wish to create'),
+            model_name="user",
+            name="requested_ministry_details",
+            field=models.TextField(
+                blank=True,
+                help_text="Description of the ministry they own or wish to create",
+            ),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='status',
-            field=models.CharField(choices=[('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')], default='pending', max_length=10),
+            model_name="user",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("pending", "Pending"),
+                    ("approved", "Approved"),
+                    ("rejected", "Rejected"),
+                ],
+                default="pending",
+                max_length=10,
+            ),
         ),
     ]

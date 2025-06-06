@@ -1,8 +1,10 @@
-from django.test import TestCase
-from django.core.exceptions import ValidationError
+from datetime import date, datetime, time
+
 from django.contrib.auth import get_user_model
-from .models import Parish, Category, Ministry, Event, EventException
-from datetime import datetime, date, time
+from django.core.exceptions import ValidationError
+from django.test import TestCase
+
+from .models import Category, Event, EventException, Ministry, Parish
 
 User = get_user_model()
 
@@ -14,7 +16,7 @@ class ParishModelTest(TestCase):
             address="123 Test St, Test City, FL 32601",
             website_url="https://testparish.org",
             phone_number="(352) 555-1234",
-            mass_schedule="Saturday 6:00 PM, Sunday 8:00 AM & 10:30 AM"
+            mass_schedule="Saturday 6:00 PM, Sunday 8:00 AM & 10:30 AM",
         )
 
     def test_parish_creation(self):
@@ -30,20 +32,17 @@ class ParishModelTest(TestCase):
 
 class UserModelTest(TestCase):
     def setUp(self):
-        self.parish = Parish.objects.create(
-            name="Test Parish",
-            address="123 Test St"
-        )
-        
+        self.parish = Parish.objects.create(name="Test Parish", address="123 Test St")
+
     def test_user_creation_defaults(self):
         user = User.objects.create_user(
             username="testuser",
             email="test@example.com",
             password="testpass123",
-            full_name="Test User"
+            full_name="Test User",
         )
-        self.assertEqual(user.role, 'leader')
-        self.assertEqual(user.status, 'pending')
+        self.assertEqual(user.role, "leader")
+        self.assertEqual(user.status, "pending")
         self.assertEqual(str(user), "Test User (test@example.com)")
 
     def test_user_with_parish(self):
@@ -52,7 +51,7 @@ class UserModelTest(TestCase):
             email="test@example.com",
             password="testpass123",
             full_name="Test User",
-            associated_parish=self.parish
+            associated_parish=self.parish,
         )
         self.assertEqual(user.associated_parish, self.parish)
 
@@ -62,9 +61,9 @@ class UserModelTest(TestCase):
             email="admin@example.com",
             password="testpass123",
             full_name="Admin User",
-            role='admin'
+            role="admin",
         )
-        self.assertEqual(admin_user.role, 'admin')
+        self.assertEqual(admin_user.role, "admin")
 
     def test_user_status_choices(self):
         user = User.objects.create_user(
@@ -72,9 +71,9 @@ class UserModelTest(TestCase):
             email="test@example.com",
             password="testpass123",
             full_name="Test User",
-            status='approved'
+            status="approved",
         )
-        self.assertEqual(user.status, 'approved')
+        self.assertEqual(user.status, "approved")
 
 
 class CategoryModelTest(TestCase):
@@ -95,7 +94,7 @@ class MinistryModelTest(TestCase):
             username="testuser",
             email="test@example.com",
             password="testpass123",
-            full_name="Test User"
+            full_name="Test User",
         )
         self.category = Category.objects.create(name="Test Category")
 
@@ -105,10 +104,10 @@ class MinistryModelTest(TestCase):
             associated_parish=self.parish,
             name="Test Ministry",
             description="A test ministry",
-            contact_info="Contact info here"
+            contact_info="Contact info here",
         )
         ministry.categories.add(self.category)
-        
+
         self.assertEqual(str(ministry), "Test Ministry")
         self.assertEqual(ministry.owner_user, self.user)
         self.assertEqual(ministry.associated_parish, self.parish)
@@ -122,14 +121,14 @@ class EventModelTest(TestCase):
             username="testuser",
             email="test@example.com",
             password="testpass123",
-            full_name="Test User"
+            full_name="Test User",
         )
         self.ministry = Ministry.objects.create(
             owner_user=self.user,
             associated_parish=self.parish,
             name="Test Ministry",
             description="A test ministry",
-            contact_info="Contact info here"
+            contact_info="Contact info here",
         )
 
     def test_adhoc_event_creation(self):
@@ -140,7 +139,7 @@ class EventModelTest(TestCase):
             location="Test Location",
             is_recurring=False,
             start_datetime=datetime(2025, 1, 15, 19, 0),
-            end_datetime=datetime(2025, 1, 15, 21, 0)
+            end_datetime=datetime(2025, 1, 15, 21, 0),
         )
         self.assertEqual(str(event), "Test Event")
         self.assertFalse(event.is_recurring)
@@ -156,7 +155,7 @@ class EventModelTest(TestCase):
             series_end_date=date(2025, 12, 31),
             start_time_of_day=time(19, 0),
             end_time_of_day=time(21, 0),
-            recurrence_rule="FREQ=WEEKLY;BYDAY=WE"
+            recurrence_rule="FREQ=WEEKLY;BYDAY=WE",
         )
         self.assertTrue(event.is_recurring)
         self.assertEqual(event.recurrence_rule, "FREQ=WEEKLY;BYDAY=WE")
@@ -193,14 +192,14 @@ class EventExceptionModelTest(TestCase):
             username="testuser",
             email="test@example.com",
             password="testpass123",
-            full_name="Test User"
+            full_name="Test User",
         )
         self.ministry = Ministry.objects.create(
             owner_user=self.user,
             associated_parish=self.parish,
             name="Test Ministry",
             description="A test ministry",
-            contact_info="Contact info here"
+            contact_info="Contact info here",
         )
         self.event = Event.objects.create(
             associated_ministry=self.ministry,
@@ -211,27 +210,27 @@ class EventExceptionModelTest(TestCase):
             series_start_date=date(2025, 1, 1),
             start_time_of_day=time(19, 0),
             end_time_of_day=time(21, 0),
-            recurrence_rule="FREQ=WEEKLY;BYDAY=WE"
+            recurrence_rule="FREQ=WEEKLY;BYDAY=WE",
         )
 
     def test_cancelled_exception(self):
         exception = EventException.objects.create(
             event=self.event,
             original_occurrence_date=date(2025, 1, 15),
-            status='cancelled'
+            status="cancelled",
         )
-        self.assertEqual(exception.status, 'cancelled')
-        self.assertIn('cancelled', str(exception))
+        self.assertEqual(exception.status, "cancelled")
+        self.assertIn("cancelled", str(exception))
 
     def test_rescheduled_exception(self):
         exception = EventException.objects.create(
             event=self.event,
             original_occurrence_date=date(2025, 1, 15),
-            status='rescheduled',
+            status="rescheduled",
             new_start_datetime=datetime(2025, 1, 16, 20, 0),
-            new_end_datetime=datetime(2025, 1, 16, 22, 0)
+            new_end_datetime=datetime(2025, 1, 16, 22, 0),
         )
-        self.assertEqual(exception.status, 'rescheduled')
+        self.assertEqual(exception.status, "rescheduled")
         self.assertTrue(exception.new_start_datetime)
         self.assertTrue(exception.new_end_datetime)
 
@@ -239,7 +238,7 @@ class EventExceptionModelTest(TestCase):
         exception = EventException(
             event=self.event,
             original_occurrence_date=date(2025, 1, 15),
-            status='rescheduled'
+            status="rescheduled"
             # Missing new_start_datetime and new_end_datetime
         )
         with self.assertRaises(ValidationError):
@@ -249,11 +248,11 @@ class EventExceptionModelTest(TestCase):
         EventException.objects.create(
             event=self.event,
             original_occurrence_date=date(2025, 1, 15),
-            status='cancelled'
+            status="cancelled",
         )
         with self.assertRaises(Exception):
             EventException.objects.create(
                 event=self.event,
                 original_occurrence_date=date(2025, 1, 15),
-                status='rescheduled'
+                status="rescheduled",
             )
