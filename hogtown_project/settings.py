@@ -10,22 +10,27 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5!xwk_&yf)-czztlbc)8^8t1l8hol$t6cgp$xf_y(02h!1@cex'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key-change-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes', 'on')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
 
 
 # Application definition
@@ -74,12 +79,24 @@ WSGI_APPLICATION = 'hogtown_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_URL = os.getenv('DATABASE_URL', f'sqlite:///{BASE_DIR}/db.sqlite3')
+
+if DATABASE_URL.startswith('sqlite'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    # For other database backends, you would parse DATABASE_URL
+    # This is a basic implementation - consider using dj-database-url for more robust parsing
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -137,18 +154,17 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Prosopo Procaptcha settings
-PROSOPO_SITE_KEY = 'your-site-key-here'  # Replace with actual site key
-PROSOPO_SECRET_KEY = 'your-secret-key-here'  # Replace with actual secret key
-PROSOPO_VERIFY_URL = 'https://api.prosopo.io/siteverify'
+PROSOPO_SITE_KEY = os.getenv('PROSOPO_SITE_KEY', 'your-site-key-here')
+PROSOPO_SECRET_KEY = os.getenv('PROSOPO_SECRET_KEY', 'your-secret-key-here')
+PROSOPO_VERIFY_URL = os.getenv('PROSOPO_VERIFY_URL', 'https://api.prosopo.io/siteverify')
 
 # Email settings
-# For development, use console backend
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@hogtowncatholic.org')
 
-# For production, uncomment and configure Brevo (Sendinblue):
-# EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
-# ANYMAIL = {
-#     "SENDINBLUE_API_KEY": "your-api-key-here",
-# }
-
-DEFAULT_FROM_EMAIL = 'noreply@hogtowncatholic.org'
+# Brevo (Sendinblue) email settings
+SENDINBLUE_API_KEY = os.getenv('SENDINBLUE_API_KEY')
+if SENDINBLUE_API_KEY and EMAIL_BACKEND == 'anymail.backends.sendinblue.EmailBackend':
+    ANYMAIL = {
+        "SENDINBLUE_API_KEY": SENDINBLUE_API_KEY,
+    }
