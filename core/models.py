@@ -26,10 +26,12 @@ class User(AbstractUser):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
     ]
     
     full_name = models.CharField(max_length=200)
     associated_parish = models.ForeignKey(Parish, on_delete=models.CASCADE, null=True, blank=True)
+    requested_ministry_details = models.TextField(blank=True, help_text="Description of the ministry they own or wish to create")
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='leader')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
 

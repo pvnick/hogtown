@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'anymail',
     'core',
 ]
 
@@ -114,6 +115,11 @@ USE_TZ = True
 # Custom user model
 AUTH_USER_MODEL = 'core.User'
 
+# Custom authentication backend
+AUTHENTICATION_BACKENDS = [
+    'core.backends.ApprovedUserBackend',
+]
+
 # Login/logout URLs
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/portal/'
@@ -129,3 +135,20 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Prosopo Procaptcha settings
+PROSOPO_SITE_KEY = 'your-site-key-here'  # Replace with actual site key
+PROSOPO_SECRET_KEY = 'your-secret-key-here'  # Replace with actual secret key
+PROSOPO_VERIFY_URL = 'https://api.prosopo.io/siteverify'
+
+# Email settings
+# For development, use console backend
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# For production, uncomment and configure Brevo (Sendinblue):
+# EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
+# ANYMAIL = {
+#     "SENDINBLUE_API_KEY": "your-api-key-here",
+# }
+
+DEFAULT_FROM_EMAIL = 'noreply@hogtowncatholic.org'

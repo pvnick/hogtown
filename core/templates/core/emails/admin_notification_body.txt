@@ -1,0 +1,12 @@
+A new ministry leader has registered and is pending approval.
+
+Name: {{ user.full_name }}
+Email: {{ user.email }}
+Parish: {{ user.associated_parish.name|default:"Not specified" }}
+Ministry Details: {{ user.requested_ministry_details }}
+
+Please log in to the admin panel to approve or reject this request:
+{{ admin_url }}
+
+Best regards,
+Hogtown Catholic System

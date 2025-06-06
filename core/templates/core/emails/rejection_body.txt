@@ -1,0 +1,8 @@
+Dear {{ user.full_name }},
+
+Thank you for your interest in joining Hogtown Catholic. After review, your application was not approved at this time.
+
+If you have any questions, please feel free to contact us.
+
+Best regards,
+Hogtown Catholic Team

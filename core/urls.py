@@ -13,6 +13,8 @@ urlpatterns = [
     # Authentication
     path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('register/', views.register_ministry_leader, name='register'),
+    path('registration-success/', views.registration_success, name='registration_success'),
     
     # Ministry Leader Portal
     path('portal/', views.ministry_portal, name='ministry_portal'),

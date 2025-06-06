@@ -37,12 +37,17 @@
                 </form>
                 
                 <hr>
-                <p class="text-muted">
+                <div class="text-muted">
                     <small>
-                        Ministry Leaders: Your account must be approved by an administrator before you can log in.
-                        Contact your parish administrator if you need an account.
+                        <strong>Ministry Leaders:</strong> Your account must be approved by an administrator before you can log in.
+                        If you're having trouble logging in, your account may be pending approval.
                     </small>
-                </p>
+                </div>
+                <div class="mt-2">
+                    <small>
+                        <a href="{% url 'register' %}" class="text-decoration-none">Need an account? Register here</a>
+                    </small>
+                </div>
             </div>
         </div>
     </div>

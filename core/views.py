@@ -1,14 +1,19 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.db import models
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib import messages
+from django.template.loader import render_to_string
 from datetime import datetime, timedelta
 from dateutil.rrule import rrulestr
 import json
-from .models import Parish, Ministry, Event, EventException, Category
+from .models import Parish, Ministry, Event, EventException, Category, User
+from .forms import MinistryLeaderRegistrationForm
 
 
 def parish_directory(request):
@@ -283,3 +288,49 @@ def event_occurrence_action(request, event_id, occurrence_date):
                 return JsonResponse({'error': 'No exception found to restore'}, status=404)
     
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+def register_ministry_leader(request):
+    if request.method == 'POST':
+        # Get the Prosopo token from the form
+        prosopo_token = request.POST.get('procaptcha-response', '')
+        
+        # Create a modified POST data with the token for our captcha field
+        post_data = request.POST.copy()
+        post_data['captcha'] = prosopo_token
+        
+        form = MinistryLeaderRegistrationForm(post_data)
+        if form.is_valid():
+            user = form.save()
+            
+            # Send notification emails to all administrators
+            admin_users = User.objects.filter(role='admin')
+            for admin in admin_users:
+                try:
+                    context = {
+                        'user': user,
+                        'admin_url': request.build_absolute_uri('/admin/core/user/')
+                    }
+                    subject = render_to_string('core/emails/admin_notification_subject.txt', context).strip()
+                    message = render_to_string('core/emails/admin_notification_body.txt', context)
+                    
+                    send_mail(
+                        subject=subject,
+                        message=message,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[admin.email],
+                        fail_silently=True,
+                    )
+                except Exception as e:
+                    # Log error in production, but don't fail the registration
+                    pass
+            
+            return redirect('registration_success')
+    else:
+        form = MinistryLeaderRegistrationForm()
+    
+    return render(request, 'core/register.html', {'form': form})
+
+
+def registration_success(request):
+    return render(request, 'core/registration_success.html')
