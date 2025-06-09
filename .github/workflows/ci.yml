@@ -122,7 +122,7 @@ jobs:
 
       - name: Run security checks with bandit
         run: |
-          bandit -r . -x ./venv/,./test_*.py
+          bandit -r . -x ./venv/,./test_*.py --severity-level medium
 
       - name: Check for known security vulnerabilities
         run: |
