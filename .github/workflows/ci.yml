@@ -7,7 +7,7 @@ on:
     branches: [main, v2]
 
 env:
-  PYTHON_VERSION: '3.12'
+  PYTHON_VERSION: "3.12"
   SECRET_KEY: django-insecure-test-key-for-ci-only
   DEBUG: False
   DATABASE_URL: sqlite:///test_db.sqlite3
@@ -124,7 +124,7 @@ jobs:
         run: |
           bandit -r . -x ./venv/,./test_*.py --severity-level medium
 
-      - name: Check for known security vulnerabilities
-        run: |
-          safety check
-
+      - name: Run Safety CLI to check for vulnerabilities
+        uses: pyupio/safety-action@v1
+        with:
+          api-key: ${{ secrets.SAFETY_API_KEY }}
