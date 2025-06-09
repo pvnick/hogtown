@@ -20,7 +20,8 @@ class MinistryLeaderRegistrationForm(UserCreationForm):
             attrs={
                 "class": "form-control",
                 "rows": 4,
-                "placeholder": "Please describe the ministry you lead or wish to create, including its purpose and activities.",
+                "placeholder": "Please describe the ministry you lead or wish to create, "
+                "including its purpose and activities.",
             }
         ),
         help_text="Please describe the ministry you lead or wish to create, including its purpose and activities.",

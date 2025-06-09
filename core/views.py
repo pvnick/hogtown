@@ -1,10 +1,8 @@
-import json
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from dateutil.rrule import rrulestr
 
 from django.conf import settings
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
@@ -13,7 +11,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, UpdateView
 
 from .forms import MinistryLeaderRegistrationForm
 from .models import Category, Event, EventException, Ministry, Parish, User
@@ -160,7 +158,7 @@ def get_calendar_events(request):
                         }
                     )
 
-            except Exception as e:
+            except Exception:
                 # Log error in production
                 continue
 
@@ -370,7 +368,7 @@ def register_ministry_leader(request):
                         recipient_list=[admin.email],
                         fail_silently=True,
                     )
-                except Exception as e:
+                except Exception:
                     # Log error in production, but don't fail the registration
                     pass
 

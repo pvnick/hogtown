@@ -1,6 +1,5 @@
 from unittest.mock import Mock, patch
 
-from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from .forms import MinistryLeaderRegistrationForm

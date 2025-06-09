@@ -1,4 +1,3 @@
-from django.contrib.auth import authenticate
 from django.test import Client, TestCase
 from django.urls import reverse
 

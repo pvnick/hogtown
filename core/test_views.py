@@ -1,11 +1,12 @@
-from datetime import date, datetime, time
+from datetime import datetime
 from unittest.mock import Mock, patch
 
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
-from .models import Category, Event, Ministry, Parish
+from .models import Event, Ministry, Parish
 
 User = get_user_model()
 
@@ -277,8 +278,8 @@ class CalendarAPIViewTest(TestCase):
             description="A test event",
             location="Test Location",
             is_recurring=False,
-            start_datetime=datetime(2025, 6, 15, 19, 0),
-            end_datetime=datetime(2025, 6, 15, 21, 0),
+            start_datetime=timezone.make_aware(datetime(2025, 6, 15, 19, 0)),
+            end_datetime=timezone.make_aware(datetime(2025, 6, 15, 21, 0)),
         )
 
     def test_calendar_events_api(self):

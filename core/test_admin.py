@@ -2,11 +2,11 @@ from unittest.mock import Mock, patch
 
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth import get_user_model
-from django.http import HttpRequest
-from django.test import Client, TestCase
+from django.contrib.messages.storage.base import BaseStorage
+from django.test import Client, RequestFactory, TestCase
 
 from .admin import UserAdmin
-from .models import Parish, User
+from .models import Parish
 
 User = get_user_model()
 
@@ -14,6 +14,7 @@ User = get_user_model()
 class MockRequest:
     def __init__(self, user=None):
         self.user = user or Mock()
+        self._messages = BaseStorage(self)
 
     def build_absolute_uri(self, path):
         return f"http://testserver{path}"
@@ -23,6 +24,7 @@ class UserAdminTest(TestCase):
     def setUp(self):
         self.site = AdminSite()
         self.admin = UserAdmin(User, self.site)
+        self.factory = RequestFactory()
 
         self.parish = Parish.objects.create(name="Test Parish", address="123 Test St")
 
@@ -86,7 +88,9 @@ class UserAdminTest(TestCase):
 
     @patch("core.admin.send_mail")
     def test_approve_users_action(self, mock_send_mail):
-        request = MockRequest(self.admin_user)
+        request = self.factory.post("/admin/core/user/")
+        request.user = self.admin_user
+        request._messages = BaseStorage(request)
         queryset = User.objects.filter(status="pending")
 
         self.admin.approve_users(request, queryset)
@@ -102,7 +106,9 @@ class UserAdminTest(TestCase):
 
     @patch("core.admin.send_mail")
     def test_reject_users_action(self, mock_send_mail):
-        request = MockRequest(self.admin_user)
+        request = self.factory.post("/admin/core/user/")
+        request.user = self.admin_user
+        request._messages = BaseStorage(request)
         queryset = User.objects.filter(status="pending")
 
         self.admin.reject_users(request, queryset)
@@ -118,7 +124,9 @@ class UserAdminTest(TestCase):
 
     @patch("core.admin.send_mail")
     def test_approve_non_pending_users(self, mock_send_mail):
-        request = MockRequest(self.admin_user)
+        request = self.factory.post("/admin/core/user/")
+        request.user = self.admin_user
+        request._messages = BaseStorage(request)
         queryset = User.objects.filter(status="approved")  # Already approved users
 
         self.admin.approve_users(request, queryset)
@@ -131,7 +139,9 @@ class UserAdminTest(TestCase):
         # Mock email failure
         mock_send_mail.side_effect = Exception("Email service down")
 
-        request = MockRequest(self.admin_user)
+        request = self.factory.post("/admin/core/user/")
+        request.user = self.admin_user
+        request._messages = BaseStorage(request)
         queryset = User.objects.filter(status="pending")
 
         # Should not raise exception

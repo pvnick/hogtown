@@ -1,0 +1,187 @@
+Creating test database for alias 'default'...
+....EE.E.E..................EF.........../home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1671: RuntimeWarning: DateTimeField EventException.new_start_datetime received a naive datetime (2025-01-16 20:00:00) while time zone support is active.
+  warnings.warn(
+/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1671: RuntimeWarning: DateTimeField EventException.new_end_datetime received a naive datetime (2025-01-16 22:00:00) while time zone support is active.
+  warnings.warn(
+.../home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1671: RuntimeWarning: DateTimeField Event.start_datetime received a naive datetime (2025-01-15 19:00:00) while time zone support is active.
+  warnings.warn(
+/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1671: RuntimeWarning: DateTimeField Event.end_datetime received a naive datetime (2025-01-15 21:00:00) while time zone support is active.
+  warnings.warn(
+.........../home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1671: RuntimeWarning: DateTimeField Event.start_datetime received a naive datetime (2025-06-15 19:00:00) while time zone support is active.
+  warnings.warn(
+/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/db/models/fields/__init__.py:1671: RuntimeWarning: DateTimeField Event.end_datetime received a naive datetime (2025-06-15 21:00:00) while time zone support is active.
+  warnings.warn(
+.................
+======================================================================
+ERROR: test_approve_non_pending_users (core.test_admin.UserAdminTest.test_approve_non_pending_users)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/contrib/messages/api.py", line 27, in add_message
+    messages = request._messages
+               ^^^^^^^^^^^^^^^^^
+AttributeError: 'MockRequest' object has no attribute '_messages'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/mock.py", line 1390, in patched
+    return func(*newargs, **newkeywargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pvnick/hogtown/core/test_admin.py", line 123, in test_approve_non_pending_users
+    self.admin.approve_users(request, queryset)
+  File "/home/pvnick/hogtown/core/admin.py", line 50, in approve_users
+    self.message_user(request, "No pending users selected.", messages.WARNING)
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/contrib/admin/options.py", line 1299, in message_user
+    messages.add_message(
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/contrib/messages/api.py", line 30, in add_message
+    raise TypeError(
+TypeError: add_message() argument must be an HttpRequest object, not 'MockRequest'.
+
+======================================================================
+ERROR: test_approve_users_action (core.test_admin.UserAdminTest.test_approve_users_action)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/contrib/messages/api.py", line 27, in add_message
+    messages = request._messages
+               ^^^^^^^^^^^^^^^^^
+AttributeError: 'MockRequest' object has no attribute '_messages'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/mock.py", line 1390, in patched
+    return func(*newargs, **newkeywargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pvnick/hogtown/core/test_admin.py", line 91, in test_approve_users_action
+    self.admin.approve_users(request, queryset)
+  File "/home/pvnick/hogtown/core/admin.py", line 82, in approve_users
+    self.message_user(
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/contrib/admin/options.py", line 1299, in message_user
+    messages.add_message(
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/contrib/messages/api.py", line 30, in add_message
+    raise TypeError(
+TypeError: add_message() argument must be an HttpRequest object, not 'MockRequest'.
+
+======================================================================
+ERROR: test_email_failure_handling (core.test_admin.UserAdminTest.test_email_failure_handling)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pvnick/hogtown/core/admin.py", line 69, in approve_users
+    send_mail(
+  File "/usr/lib/python3.12/unittest/mock.py", line 1134, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1138, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1193, in _execute_mock_call
+    raise effect
+Exception: Email service down
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/contrib/messages/api.py", line 27, in add_message
+    messages = request._messages
+               ^^^^^^^^^^^^^^^^^
+AttributeError: 'MockRequest' object has no attribute '_messages'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/mock.py", line 1390, in patched
+    return func(*newargs, **newkeywargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pvnick/hogtown/core/test_admin.py", line 137, in test_email_failure_handling
+    self.admin.approve_users(request, queryset)
+  File "/home/pvnick/hogtown/core/admin.py", line 78, in approve_users
+    self.message_user(
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/contrib/admin/options.py", line 1299, in message_user
+    messages.add_message(
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/contrib/messages/api.py", line 30, in add_message
+    raise TypeError(
+TypeError: add_message() argument must be an HttpRequest object, not 'MockRequest'.
+
+======================================================================
+ERROR: test_reject_users_action (core.test_admin.UserAdminTest.test_reject_users_action)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/contrib/messages/api.py", line 27, in add_message
+    messages = request._messages
+               ^^^^^^^^^^^^^^^^^
+AttributeError: 'MockRequest' object has no attribute '_messages'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/mock.py", line 1390, in patched
+    return func(*newargs, **newkeywargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pvnick/hogtown/core/test_admin.py", line 107, in test_reject_users_action
+    self.admin.reject_users(request, queryset)
+  File "/home/pvnick/hogtown/core/admin.py", line 122, in reject_users
+    self.message_user(
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/contrib/admin/options.py", line 1299, in message_user
+    messages.add_message(
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/contrib/messages/api.py", line 30, in add_message
+    raise TypeError(
+TypeError: add_message() argument must be an HttpRequest object, not 'MockRequest'.
+
+======================================================================
+ERROR: test_captcha_network_error (core.test_forms.MinistryLeaderRegistrationFormTest.test_captcha_network_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/mock.py", line 1390, in patched
+    return func(*newargs, **newkeywargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pvnick/hogtown/core/test_forms.py", line 53, in test_captcha_network_error
+    self.assertFalse(form.is_valid())
+                     ^^^^^^^^^^^^^^^
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/forms/forms.py", line 206, in is_valid
+    return self.is_bound and not self.errors
+                                 ^^^^^^^^^^^
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/forms/forms.py", line 201, in errors
+    self.full_clean()
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/forms/forms.py", line 337, in full_clean
+    self._clean_fields()
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/forms/forms.py", line 345, in _clean_fields
+    self.cleaned_data[name] = field._clean_bound_field(bf)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/forms/fields.py", line 273, in _clean_bound_field
+    return self.clean(value)
+           ^^^^^^^^^^^^^^^^^
+  File "/home/pvnick/hogtown/venv/lib/python3.12/site-packages/django/forms/fields.py", line 209, in clean
+    self.validate(value)
+  File "/home/pvnick/hogtown/core/fields.py", line 35, in validate
+    self._verify_token(value)
+  File "/home/pvnick/hogtown/core/fields.py", line 48, in _verify_token
+    response = requests.post(
+               ^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1134, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1138, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1193, in _execute_mock_call
+    raise effect
+Exception: Network error
+
+======================================================================
+FAIL: test_duplicate_email (core.test_forms.MinistryLeaderRegistrationFormTest.test_duplicate_email)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/unittest/mock.py", line 1390, in patched
+    return func(*newargs, **newkeywargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pvnick/hogtown/core/test_forms.py", line 128, in test_duplicate_email
+    self.assertFalse(form.is_valid())
+AssertionError: True is not false
+
+----------------------------------------------------------------------
+Ran 72 tests in 23.706s
+
+FAILED (failures=1, errors=5)
+Destroying test database for alias 'default'...
+Found 72 test(s).
+System check identified no issues (0 silenced).
