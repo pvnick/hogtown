@@ -1,3 +1,4 @@
+import requests
 from unittest.mock import Mock, patch
 
 from django.test import TestCase
@@ -47,7 +48,7 @@ class MinistryLeaderRegistrationFormTest(TestCase):
     @patch("core.fields.requests.post")
     def test_captcha_network_error(self, mock_post):
         # Mock network error during captcha verification
-        mock_post.side_effect = Exception("Network error")
+        mock_post.side_effect = requests.RequestException("Network error")
 
         form = MinistryLeaderRegistrationForm(data=self.valid_form_data)
         self.assertFalse(form.is_valid())

@@ -3,6 +3,7 @@ from datetime import date, datetime, time
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from django.utils import timezone
 
 from .models import Category, Event, EventException, Ministry, Parish
 
@@ -138,8 +139,8 @@ class EventModelTest(TestCase):
             description="A test event",
             location="Test Location",
             is_recurring=False,
-            start_datetime=datetime(2025, 1, 15, 19, 0),
-            end_datetime=datetime(2025, 1, 15, 21, 0),
+            start_datetime=timezone.make_aware(datetime(2025, 1, 15, 19, 0)),
+            end_datetime=timezone.make_aware(datetime(2025, 1, 15, 21, 0)),
         )
         self.assertEqual(str(event), "Test Event")
         self.assertFalse(event.is_recurring)
@@ -227,8 +228,8 @@ class EventExceptionModelTest(TestCase):
             event=self.event,
             original_occurrence_date=date(2025, 1, 15),
             status="rescheduled",
-            new_start_datetime=datetime(2025, 1, 16, 20, 0),
-            new_end_datetime=datetime(2025, 1, 16, 22, 0),
+            new_start_datetime=timezone.make_aware(datetime(2025, 1, 16, 20, 0)),
+            new_end_datetime=timezone.make_aware(datetime(2025, 1, 16, 22, 0)),
         )
         self.assertEqual(exception.status, "rescheduled")
         self.assertTrue(exception.new_start_datetime)

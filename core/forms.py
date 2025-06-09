@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.core.exceptions import ValidationError
 
 from .fields import ProsopoField
 from .models import Parish, User
@@ -53,6 +54,12 @@ class MinistryLeaderRegistrationForm(UserCreationForm):
         self.fields[
             "password2"
         ].help_text = "Enter the same password as before, for verification."
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("A user with this email already exists.")
+        return email
 
     def save(self, commit=True):
         user = super().save(commit=False)
