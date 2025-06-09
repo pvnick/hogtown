@@ -1,5 +1,6 @@
-import requests
 from unittest.mock import Mock, patch
+
+import requests
 
 from django.test import TestCase
 
