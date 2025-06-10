@@ -93,3 +93,37 @@ variable "skip_final_snapshot" {
   type        = bool
   default     = false
 }
+
+# Application secrets variables
+variable "prosopo_site_key" {
+  description = "Prosopo site key for CAPTCHA"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "prosopo_secret_key" {
+  description = "Prosopo secret key for CAPTCHA"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "sendinblue_api_key" {
+  description = "Sendinblue API key for email"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "default_from_email" {
+  description = "Default from email address"
+  type        = string
+  default     = "noreply@hogtowncatholic.org"
+}
+
+variable "allowed_hosts" {
+  description = "Comma-separated list of allowed hosts for Django"
+  type        = string
+  default     = ""
+}

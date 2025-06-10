@@ -103,6 +103,18 @@ variable "database_secret_arn" {
   default     = ""
 }
 
+variable "app_secrets_arn" {
+  description = "ARN of the application secrets in Secrets Manager"
+  type        = string
+  default     = ""
+}
+
+variable "app_secrets_name" {
+  description = "Name of the application secrets in Secrets Manager"
+  type        = string
+  default     = ""
+}
+
 
 variable "additional_env_vars" {
   description = "Additional environment variables to set for the App Runner service"

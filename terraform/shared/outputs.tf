@@ -27,3 +27,13 @@ output "github_connection_status" {
   description = "The status of the GitHub connection"
   value       = aws_apprunner_connection.github.status
 }
+
+output "app_secrets_arn" {
+  description = "The ARN of the application secrets in Secrets Manager"
+  value       = aws_secretsmanager_secret.app_secrets.arn
+}
+
+output "app_secrets_name" {
+  description = "The name of the application secrets in Secrets Manager"
+  value       = aws_secretsmanager_secret.app_secrets.name
+}

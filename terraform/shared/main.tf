@@ -46,3 +46,45 @@ resource "aws_apprunner_connection" "github" {
     Project = var.project_name
   }
 }
+
+# Application secrets in AWS Secrets Manager
+resource "aws_secretsmanager_secret" "app_secrets" {
+  name        = "${var.project_name}-app-secrets"
+  description = "Application secrets for ${var.project_name}"
+
+  tags = {
+    Name    = "${var.project_name}-app-secrets"
+    Project = var.project_name
+  }
+}
+
+# Generate random secret key for Django
+resource "random_password" "django_secret_key" {
+  length  = 50
+  special = true
+}
+
+# Application secrets values
+resource "aws_secretsmanager_secret_version" "app_secrets" {
+  secret_id = aws_secretsmanager_secret.app_secrets.id
+  secret_string = jsonencode({
+    # Django application secrets
+    SECRET_KEY           = random_password.django_secret_key.result
+    PROSOPO_SITE_KEY    = var.prosopo_site_key
+    PROSOPO_SECRET_KEY  = var.prosopo_secret_key
+    SENDINBLUE_API_KEY  = var.sendinblue_api_key
+    DEFAULT_FROM_EMAIL  = var.default_from_email
+    ALLOWED_HOSTS       = var.allowed_hosts
+    
+    # Database connection details
+    DB_HOST     = module.database.db_instance_endpoint
+    DB_PORT     = tostring(module.database.db_instance_port)
+    DB_NAME     = module.database.db_instance_name
+    DB_USERNAME = module.database.db_instance_username
+    DB_PASSWORD = module.database.db_instance_password
+  })
+
+  lifecycle {
+    ignore_changes = [secret_string]
+  }
+}

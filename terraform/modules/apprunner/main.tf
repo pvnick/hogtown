@@ -117,9 +117,18 @@ resource "aws_iam_role" "apprunner_service_role" {
   }
 }
 
+# Collect all secret ARNs that need access
+locals {
+  all_secret_arns = compact(concat(
+    var.secrets_manager_arns,
+    var.app_secrets_arn != "" ? [var.app_secrets_arn] : [],
+    var.database_secret_arn != "" ? [var.database_secret_arn] : []
+  ))
+}
+
 # Policy for accessing Secrets Manager
 resource "aws_iam_policy" "secrets_access" {
-  count       = length(var.secrets_manager_arns) > 0 ? 1 : 0
+  count       = length(local.all_secret_arns) > 0 ? 1 : 0
   name        = "${var.app_name}-secrets-access"
   description = "Allow App Runner to access required secrets"
 
@@ -132,7 +141,7 @@ resource "aws_iam_policy" "secrets_access" {
           "secretsmanager:GetSecretValue",
           "secretsmanager:DescribeSecret"
         ]
-        Resource = var.secrets_manager_arns
+        Resource = local.all_secret_arns
       }
     ]
   })
@@ -145,7 +154,7 @@ resource "aws_iam_policy" "secrets_access" {
 }
 
 resource "aws_iam_role_policy_attachment" "secrets_access" {
-  count      = length(var.secrets_manager_arns) > 0 ? 1 : 0
+  count      = length(local.all_secret_arns) > 0 ? 1 : 0
   role       = aws_iam_role.apprunner_service_role.name
   policy_arn = aws_iam_policy.secrets_access[0].arn
 }
@@ -199,9 +208,26 @@ resource "aws_apprunner_service" "main" {
             AWS_REGION            = data.aws_region.current.name
           }, var.additional_env_vars)
           
-          runtime_environment_secrets = var.database_secret_arn != "" ? {
-            DATABASE_URL = "${var.database_secret_arn}:database_url"
-          } : {}
+          runtime_environment_secrets = merge(
+            # Legacy database secret for backwards compatibility
+            var.database_secret_arn != "" ? {
+              DATABASE_URL = "${var.database_secret_arn}:database_url"
+            } : {},
+            # Application secrets from central secret store
+            var.app_secrets_arn != "" ? {
+              SECRET_KEY          = "${var.app_secrets_arn}:SECRET_KEY"
+              PROSOPO_SITE_KEY   = "${var.app_secrets_arn}:PROSOPO_SITE_KEY"
+              PROSOPO_SECRET_KEY = "${var.app_secrets_arn}:PROSOPO_SECRET_KEY"
+              SENDINBLUE_API_KEY = "${var.app_secrets_arn}:SENDINBLUE_API_KEY"
+              DEFAULT_FROM_EMAIL = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL"
+              ALLOWED_HOSTS      = "${var.app_secrets_arn}:ALLOWED_HOSTS"
+              DB_HOST            = "${var.app_secrets_arn}:DB_HOST"
+              DB_PORT            = "${var.app_secrets_arn}:DB_PORT"
+              DB_NAME            = "${var.app_secrets_arn}:DB_NAME"
+              DB_USERNAME        = "${var.app_secrets_arn}:DB_USERNAME"
+              DB_PASSWORD        = "${var.app_secrets_arn}:DB_PASSWORD"
+            } : {}
+          )
         }
       }
       

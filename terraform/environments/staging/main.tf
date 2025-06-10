@@ -48,6 +48,8 @@ module "staging_apprunner" {
   memory                     = var.staging_memory
   secrets_manager_arns       = [for arn in module.database_setup.environment_database_secrets : arn]
   database_secret_arn        = module.database_setup.environment_database_secrets["${var.project_name}_staging"]
+  app_secrets_arn           = data.terraform_remote_state.shared.outputs.app_secrets_arn
+  app_secrets_name          = data.terraform_remote_state.shared.outputs.app_secrets_name
   observability_enabled      = var.observability_enabled
   log_retention_days         = var.log_retention_days
   

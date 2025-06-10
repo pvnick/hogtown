@@ -19,7 +19,8 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from .env file
+# Load environment variables from .env file (for development)
+# In production, App Runner automatically populates environment variables from AWS Secrets Manager
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -83,9 +84,27 @@ WSGI_APPLICATION = "hogtown_project.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
+# In production, database connection details come from individual environment variables
+# populated by App Runner from AWS Secrets Manager
+def get_database_url():
+    """Construct database URL from environment variables."""
+    db_host = os.getenv("DB_HOST")
+    db_port = os.getenv("DB_PORT")
+    db_name = os.getenv("DB_NAME")
+    db_username = os.getenv("DB_USERNAME")
+    db_password = os.getenv("DB_PASSWORD")
+
+    if all([db_host, db_port, db_name, db_username, db_password]):
+        return f"postgresql://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"
+
+    # Fall back to DATABASE_URL or SQLite for development
+    return os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/db.sqlite3")
+
+
 DATABASES = {
     "default": dj_database_url.parse(
-        os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR}/db.sqlite3"),
+        get_database_url(),
         conn_max_age=600,
         conn_health_checks=True,
     )
