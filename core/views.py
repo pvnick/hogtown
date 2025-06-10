@@ -58,8 +58,11 @@ def get_calendar_events(request):
     if not start_date or not end_date:
         return JsonResponse({"events": []})
 
-    start = datetime.fromisoformat(start_date.replace("Z", "+00:00")).date()
-    end = datetime.fromisoformat(end_date.replace("Z", "+00:00")).date()
+    try:
+        start = datetime.fromisoformat(start_date.replace("Z", "+00:00")).date()
+        end = datetime.fromisoformat(end_date.replace("Z", "+00:00")).date()
+    except ValueError:
+        return JsonResponse({"error": "Invalid date format provided."}, status=400)
 
     events = []
 
@@ -387,7 +390,7 @@ def register_ministry_leader(request):
                         message=message,
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         recipient_list=[admin.email],
-                        fail_silently=True,
+                        fail_silently=False,
                     )
                 except Exception as e:
                     # Log error but don't fail the registration
