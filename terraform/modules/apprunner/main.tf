@@ -197,7 +197,6 @@ resource "aws_apprunner_service" "main" {
             DJANGO_SETTINGS_MODULE = "hogtown_project.settings"
             DEBUG                  = "False"
             AWS_REGION            = data.aws_region.current.name
-            GUNICORN_WORKERS      = tostring(var.gunicorn_workers)
           }, var.additional_env_vars)
           
           runtime_environment_secrets = var.database_secret_arn != "" ? {

@@ -48,7 +48,6 @@ module "staging_apprunner" {
   memory                     = var.staging_memory
   secrets_manager_arns       = [for arn in module.database_setup.environment_database_secrets : arn]
   database_secret_arn        = module.database_setup.environment_database_secrets["${var.project_name}_staging"]
-  gunicorn_workers           = 1  # 1 worker for 0.25 vCPU
   observability_enabled      = var.observability_enabled
   log_retention_days         = var.log_retention_days
   

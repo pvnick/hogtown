@@ -12,9 +12,9 @@ run:
   command: |
     echo "Running database migrations at runtime..."
     python manage.py migrate --noinput
-    echo "Starting Gunicorn server with ${GUNICORN_WORKERS:-1} workers..."
+    echo "Starting Gunicorn server with $(nproc) workers..."
     gunicorn --bind 0.0.0.0:8000 \
-             --workers ${GUNICORN_WORKERS:-1} \
+             --workers $(nproc) \
              --timeout 60 \
              --keep-alive 2 \
              --max-requests 1000 \

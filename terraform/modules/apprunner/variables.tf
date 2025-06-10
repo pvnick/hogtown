@@ -103,16 +103,6 @@ variable "database_secret_arn" {
   default     = ""
 }
 
-variable "gunicorn_workers" {
-  description = "Number of Gunicorn workers (should match CPU allocation)"
-  type        = number
-  default     = 1
-  
-  validation {
-    condition = var.gunicorn_workers >= 1 && var.gunicorn_workers <= 4
-    error_message = "Gunicorn workers must be between 1 and 4."
-  }
-}
 
 variable "additional_env_vars" {
   description = "Additional environment variables to set for the App Runner service"
