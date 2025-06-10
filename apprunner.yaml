@@ -1,0 +1,26 @@
+version: 1.0
+runtime: python3
+build:
+  commands:
+    build:
+      - echo "Installing dependencies..."
+      - pip install -r requirements.txt
+      - echo "Collecting static files..."
+      - python manage.py collectstatic --noinput
+run:
+  runtime-version: 3.12
+  command: |
+    echo "Running database migrations at runtime..."
+    python manage.py migrate --noinput
+    echo "Starting Gunicorn server with ${GUNICORN_WORKERS:-1} workers..."
+    gunicorn --bind 0.0.0.0:8000 \
+             --workers ${GUNICORN_WORKERS:-1} \
+             --timeout 60 \
+             --keep-alive 2 \
+             --max-requests 1000 \
+             --max-requests-jitter 100 \
+             hogtown_project.wsgi:application
+  network:
+    port: 8000
+    env:
+      PORT: 8000

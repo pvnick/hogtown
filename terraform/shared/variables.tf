@@ -1,0 +1,95 @@
+variable "project_name" {
+  description = "Name of the project"
+  type        = string
+  default     = "hogtown"
+}
+
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "vpc_id" {
+  description = "VPC ID to deploy RDS in (leave empty for default VPC)"
+  type        = string
+  default     = ""
+}
+
+variable "availability_zones" {
+  description = "List of availability zones for RDS subnet group"
+  type        = list(string)
+  default     = []
+}
+
+variable "allowed_security_groups" {
+  description = "Security groups allowed to access RDS"
+  type        = list(string)
+  default     = []
+}
+
+variable "allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to access RDS (use sparingly, prefer security groups)"
+  type        = list(string)
+  default     = []
+}
+
+variable "postgres_version" {
+  description = "PostgreSQL version"
+  type        = string
+  default     = "17.2"
+}
+
+variable "db_instance_class" {
+  description = "RDS instance class"
+  type        = string
+  default     = "db.t4g.micro"
+}
+
+variable "db_allocated_storage" {
+  description = "Initial allocated storage for the database (GB)"
+  type        = number
+  default     = 20
+}
+
+variable "db_max_allocated_storage" {
+  description = "Maximum allocated storage for the database (GB)"
+  type        = number
+  default     = 1000
+}
+
+variable "multi_az" {
+  description = "Enable Multi-AZ deployment for high availability (recommended for production)"
+  type        = bool
+  default     = false
+}
+
+variable "backup_retention_period" {
+  description = "Backup retention period in days"
+  type        = number
+  default     = 7
+}
+
+variable "monitoring_interval" {
+  description = "Enhanced monitoring interval (0, 1, 5, 10, 15, 30, 60)"
+  type        = number
+  default     = 0
+}
+
+variable "performance_insights_enabled" {
+  description = "Enable Performance Insights"
+  type        = bool
+  default     = false
+}
+
+variable "deletion_protection" {
+  description = "Enable deletion protection"
+  type        = bool
+  default     = true
+}
+
+variable "skip_final_snapshot" {
+  description = "Skip final snapshot when destroying (set to false for production)"
+  type        = bool
+  default     = false
+}

@@ -1,0 +1,126 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Event Calendar - Hogtown Catholic{% endblock %}
+
+{% block extra_css %}
+<style>
+    .fc-event {
+        cursor: pointer;
+    }
+    .filter-section {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1>Event Calendar</h1>
+        <p class="lead">Find Catholic events and activities in the Gainesville area.</p>
+    </div>
+</div>
+
+<div class="filter-section">
+    <h5>Filter Events</h5>
+    <div class="row">
+        <div class="col-md-6">
+            <label for="categoryFilter" class="form-label">Filter by Category:</label>
+            <select id="categoryFilter" class="form-select">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="parishFilter" class="form-label">Filter by Parish:</label>
+            <select id="parishFilter" class="form-select">
+                <option value="">All Parishes</option>
+                {% for parish in parishes %}
+                    <option value="{{ parish.id }}">{{ parish.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</div>
+
+<div id="calendar"></div>
+
+<!-- Event Detail Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="eventModalBody">
+                <!-- Event details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listWeek'
+        },
+        events: function(info, successCallback, failureCallback) {
+            fetch(`{% url 'calendar_events_api' %}?start=${info.startStr}&end=${info.endStr}`)
+                .then(response => response.json())
+                .then(data => {
+                    successCallback(data.events);
+                })
+                .catch(error => {
+                    console.error('Error loading events:', error);
+                    failureCallback(error);
+                });
+        },
+        eventClick: function(info) {
+            // Show event details in modal
+            document.getElementById('eventModalTitle').textContent = info.event.title;
+            document.getElementById('eventModalBody').innerHTML = `
+                <p><strong>Time:</strong> ${info.event.start.toLocaleString()}</p>
+                ${info.event.end ? `<p><strong>End:</strong> ${info.event.end.toLocaleString()}</p>` : ''}
+                <p><strong>Location:</strong> ${info.event.extendedProps.location || 'Not specified'}</p>
+                <p><strong>Ministry:</strong> ${info.event.extendedProps.ministry}</p>
+                <p><strong>Parish:</strong> ${info.event.extendedProps.parish}</p>
+                <p><strong>Description:</strong></p>
+                <p>${info.event.extendedProps.description || 'No description available'}</p>
+            `;
+            var modal = new bootstrap.Modal(document.getElementById('eventModal'));
+            modal.show();
+        },
+        height: 'auto',
+        eventDisplay: 'block'
+    });
+
+    calendar.render();
+
+    // Filter functionality
+    document.getElementById('categoryFilter').addEventListener('change', function() {
+        calendar.refetchEvents();
+    });
+
+    document.getElementById('parishFilter').addEventListener('change', function() {
+        calendar.refetchEvents();
+    });
+});
+</script>
+{% endblock %}

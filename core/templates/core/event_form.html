@@ -1,0 +1,272 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+{% if object %}Edit Event{% else %}Create Event{% endif %} - Hogtown Catholic
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10">
+        <h1>{% if object %}Edit Event{% else %}Create New Event{% endif %}</h1>
+        
+        <form method="post" id="eventForm">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <h6>Please correct the following errors:</h6>
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <p>{{ field }}: {{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <div class="mb-3">
+                <label for="{{ form.associated_ministry.id_for_label }}" class="form-label">Ministry</label>
+                {{ form.associated_ministry }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.title.id_for_label }}" class="form-label">Event Title</label>
+                {{ form.title }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                {{ form.description }}
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
+                {{ form.location }}
+            </div>
+            
+            <div class="mb-3">
+                <div class="form-check">
+                    {{ form.is_recurring }}
+                    <label class="form-check-label" for="{{ form.is_recurring.id_for_label }}">
+                        This is a recurring event
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Ad-hoc Event Fields -->
+            <div id="adhocFields" class="border p-3 mb-3" style="display: none;">
+                <h5>One-time Event Details</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="{{ form.start_datetime.id_for_label }}" class="form-label">Start Date & Time</label>
+                        <input type="datetime-local" 
+                               id="{{ form.start_datetime.id_for_label }}" 
+                               name="{{ form.start_datetime.name }}"
+                               class="form-control"
+                               value="{{ form.start_datetime.value|default:'' }}"
+                               step="60">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.end_datetime.id_for_label }}" class="form-label">End Date & Time</label>
+                        <input type="datetime-local" 
+                               id="{{ form.end_datetime.id_for_label }}" 
+                               name="{{ form.end_datetime.name }}"
+                               class="form-control"
+                               value="{{ form.end_datetime.value|default:'' }}"
+                               step="60">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recurring Event Fields -->
+            <div id="recurringFields" class="border p-3 mb-3" style="display: none;">
+                <h5>Recurring Event Details</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="{{ form.series_start_date.id_for_label }}" class="form-label">Series Start Date</label>
+                        <input type="date" 
+                               id="{{ form.series_start_date.id_for_label }}" 
+                               name="{{ form.series_start_date.name }}"
+                               class="form-control"
+                               value="{{ form.series_start_date.value|default:'' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.series_end_date.id_for_label }}" class="form-label">Series End Date (optional)</label>
+                        <input type="date" 
+                               id="{{ form.series_end_date.id_for_label }}" 
+                               name="{{ form.series_end_date.name }}"
+                               class="form-control"
+                               value="{{ form.series_end_date.value|default:'' }}">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.start_time_of_day.id_for_label }}" class="form-label">Start Time</label>
+                        <input type="time" 
+                               id="{{ form.start_time_of_day.id_for_label }}" 
+                               name="{{ form.start_time_of_day.name }}"
+                               class="form-control"
+                               value="{{ form.start_time_of_day.value|default:'' }}"
+                               step="60">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.end_time_of_day.id_for_label }}" class="form-label">End Time</label>
+                        <input type="time" 
+                               id="{{ form.end_time_of_day.id_for_label }}" 
+                               name="{{ form.end_time_of_day.name }}"
+                               class="form-control"
+                               value="{{ form.end_time_of_day.value|default:'' }}"
+                               step="60">
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <h6>Recurrence Pattern</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="frequency" class="form-label">Frequency</label>
+                            <select id="frequency" class="form-select">
+                                <option value="WEEKLY">Weekly</option>
+                                <option value="MONTHLY">Monthly</option>
+                                <option value="DAILY">Daily</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="interval" class="form-label">Every</label>
+                            <select id="interval" class="form-select">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                            <div class="form-text">weeks/months/days</div>
+                        </div>
+                    </div>
+                    
+                    <div id="weeklyOptions" class="mt-3">
+                        <label class="form-label">Days of the Week</label>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="sunday" value="SU">
+                                    <label class="form-check-label" for="sunday">Sunday</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="monday" value="MO">
+                                    <label class="form-check-label" for="monday">Monday</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="tuesday" value="TU">
+                                    <label class="form-check-label" for="tuesday">Tuesday</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="wednesday" value="WE">
+                                    <label class="form-check-label" for="wednesday">Wednesday</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="thursday" value="TH">
+                                    <label class="form-check-label" for="thursday">Thursday</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="friday" value="FR">
+                                    <label class="form-check-label" for="friday">Friday</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="saturday" value="SA">
+                                    <label class="form-check-label" for="saturday">Saturday</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3" style="display: none;">
+                    <label for="{{ form.recurrence_rule.id_for_label }}" class="form-label">Generated Recurrence Rule</label>
+                    {{ form.recurrence_rule }}
+                    <div class="form-text">This will be automatically generated based on your selections above.</div>
+                </div>
+            </div>
+            
+            <div class="btn-group" role="group">
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}Update Event{% else %}Create Event{% endif %}
+                </button>
+                <a href="{% url 'ministry_portal' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add Bootstrap classes to remaining form fields (datetime/date/time inputs already have classes)
+    const textInputs = document.querySelectorAll('input[type="text"], textarea, select');
+    textInputs.forEach(input => {
+        if (!input.classList.contains('form-control')) {
+            input.classList.add('form-control');
+        }
+    });
+    
+    const recurringCheckbox = document.getElementById('{{ form.is_recurring.id_for_label }}');
+    const adhocFields = document.getElementById('adhocFields');
+    const recurringFields = document.getElementById('recurringFields');
+    const recurrenceRuleField = document.getElementById('{{ form.recurrence_rule.id_for_label }}');
+    
+    function toggleEventType() {
+        if (recurringCheckbox.checked) {
+            adhocFields.style.display = 'none';
+            recurringFields.style.display = 'block';
+        } else {
+            adhocFields.style.display = 'block';
+            recurringFields.style.display = 'none';
+        }
+    }
+    
+    // Initialize form state
+    toggleEventType();
+    
+    recurringCheckbox.addEventListener('change', toggleEventType);
+    
+    // Recurrence rule builder
+    function updateRecurrenceRule() {
+        if (!recurringCheckbox.checked) return;
+        
+        const frequency = document.getElementById('frequency').value;
+        const interval = document.getElementById('interval').value;
+        
+        let rule = `FREQ=${frequency}`;
+        
+        if (interval > 1) {
+            rule += `;INTERVAL=${interval}`;
+        }
+        
+        if (frequency === 'WEEKLY') {
+            const selectedDays = [];
+            document.querySelectorAll('#weeklyOptions input[type="checkbox"]:checked').forEach(cb => {
+                selectedDays.push(cb.value);
+            });
+            if (selectedDays.length > 0) {
+                rule += `;BYDAY=${selectedDays.join(',')}`;
+            }
+        }
+        
+        recurrenceRuleField.value = rule;
+    }
+    
+    // Event listeners for recurrence rule updates
+    document.getElementById('frequency').addEventListener('change', function() {
+        document.getElementById('weeklyOptions').style.display = this.value === 'WEEKLY' ? 'block' : 'none';
+        updateRecurrenceRule();
+    });
+    
+    document.getElementById('interval').addEventListener('change', updateRecurrenceRule);
+    
+    document.querySelectorAll('#weeklyOptions input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', updateRecurrenceRule);
+    });
+    
+    // Initialize frequency display
+    document.getElementById('frequency').dispatchEvent(new Event('change'));
+    updateRecurrenceRule();
+});
+</script>
+{% endblock %}

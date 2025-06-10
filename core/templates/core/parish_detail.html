@@ -1,0 +1,61 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ parish.name }} - Hogtown Catholic{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>{{ parish.name }}</h1>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Contact Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Address:</strong><br>{{ parish.address }}</p>
+                {% if parish.phone_number %}
+                    <p><strong>Phone:</strong> {{ parish.phone_number }}</p>
+                {% endif %}
+                {% if parish.website_url %}
+                    <p><strong>Website:</strong> 
+                        <a href="{{ parish.website_url }}" target="_blank">{{ parish.website_url }}</a>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if parish.mass_schedule %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Mass Schedule</h5>
+            </div>
+            <div class="card-body">
+                <div style="white-space: pre-line;">{{ parish.mass_schedule }}</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Ministries</h5>
+            </div>
+            <div class="card-body">
+                {% for ministry in ministries %}
+                    <div class="mb-3">
+                        <h6><a href="{% url 'ministry_detail' ministry.id %}">{{ ministry.name }}</a></h6>
+                        <p class="text-muted small">{{ ministry.description|truncatewords:20 }}</p>
+                    </div>
+                {% empty %}
+                    <p class="text-muted">No ministries listed for this parish yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{% url 'parish_directory' %}" class="btn btn-secondary">← Back to Parish Directory</a>
+</div>
+{% endblock %}

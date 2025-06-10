@@ -1,0 +1,70 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ ministry.name }} - Hogtown Catholic{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>{{ ministry.name }}</h1>
+        <p class="lead">{{ ministry.associated_parish.name }}</p>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>About This Ministry</h5>
+            </div>
+            <div class="card-body">
+                <div style="white-space: pre-line;">{{ ministry.description }}</div>
+                
+                <div class="mt-3">
+                    <h6>Categories</h6>
+                    {% for category in ministry.categories.all %}
+                        <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                    {% empty %}
+                        <span class="text-muted">No categories assigned</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Contact Information</h5>
+            </div>
+            <div class="card-body">
+                <div style="white-space: pre-line;">{{ ministry.contact_info }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Upcoming Events</h5>
+            </div>
+            <div class="card-body">
+                {% for event in events %}
+                    <div class="mb-3 border-bottom pb-2">
+                        <h6>{{ event.title }}</h6>
+                        <p class="text-muted small">
+                            {% if event.is_recurring %}
+                                Recurring: {{ event.start_time_of_day }} - {{ event.end_time_of_day }}
+                            {% else %}
+                                {{ event.start_datetime|date:"M j, Y g:i A" }}
+                            {% endif %}
+                        </p>
+                        <p class="small">{{ event.location }}</p>
+                        <p class="small">{{ event.description|truncatewords:15 }}</p>
+                    </div>
+                {% empty %}
+                    <p class="text-muted">No events scheduled.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{% url 'parish_detail' ministry.associated_parish.id %}" class="btn btn-secondary">← Back to {{ ministry.associated_parish.name }}</a>
+    <a href="{% url 'event_calendar' %}" class="btn btn-info">View Calendar</a>
+</div>
+{% endblock %}

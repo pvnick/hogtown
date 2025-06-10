@@ -1,0 +1,44 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Parish Directory - Hogtown Catholic{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>Catholic Parishes in Gainesville, Florida</h1>
+        <p class="lead">Find Catholic parishes, ministries, and events in the Gainesville area.</p>
+    </div>
+</div>
+
+<div class="row">
+    {% for parish in parishes %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ parish.name }}</h5>
+                <p class="card-text">{{ parish.address }}</p>
+                {% if parish.phone_number %}
+                    <p class="card-text"><strong>Phone:</strong> {{ parish.phone_number }}</p>
+                {% endif %}
+                {% if parish.website_url %}
+                    <p class="card-text">
+                        <a href="{{ parish.website_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            Visit Website
+                        </a>
+                    </p>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'parish_detail' parish.id %}" class="btn btn-primary">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info" role="alert">
+            No parishes found. Please check back later.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

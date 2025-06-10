@@ -1,0 +1,55 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Login - Hogtown Catholic{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Ministry Leader Login</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Username:</label>
+                        <input type="text" name="username" class="form-control" id="id_username" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_password" class="form-label">Password:</label>
+                        <input type="password" name="password" class="form-control" id="id_password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+                
+                <hr>
+                <div class="text-muted">
+                    <small>
+                        <strong>Ministry Leaders:</strong> Your account must be approved by an administrator before you can log in.
+                        If you're having trouble logging in, your account may be pending approval.
+                    </small>
+                </div>
+                <div class="mt-2">
+                    <small>
+                        <a href="{% url 'register' %}" class="text-decoration-none">Need an account? Register here</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

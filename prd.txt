@@ -1,0 +1,132 @@
+### Product Specification: Hogtown Catholic
+
+This document specifies the requirements for a web application named "Hogtown Catholic." The application will serve as a centralized directory for Catholic parishes, ministries, and events within Gainesville, Florida.
+
+---
+
+### 1. System Overview
+
+The system is a database-driven web application with three primary components:
+1.  **A public-facing website:** Allows anonymous users to browse content. A visible link allows potential ministry leaders to register.
+2.  **A Ministry Leader portal:** A secure area where authenticated and approved users can manage their ministry profiles and post events.
+3.  **An Administrator backend:** A secure area for administrators to manage core data and user approvals. The system supports multiple administrators and ensures that new user requests are actioned on a first-come, first-served basis.
+
+### 2. User Roles & Permissions
+
+* **Anonymous User (Public):**
+    * **Can:** View all public pages including directories and the event calendar.
+    * **Can:** Click the registration link to apply to become a Ministry Leader.
+    * **Cannot:** Create, edit, or delete any content.
+
+* **Ministry Leader (Authenticated User):**
+    * **Can:** Log in and out *after their account has been approved by an administrator*.
+    * **Can:** Create, read, update, and delete ministry profiles and event series that they own.
+    * **Cannot:** Modify content belonging to other Ministry Leaders or modify core site data (parishes, categories).
+
+* **Administrator (Super User):**
+    * **Can:** Perform all actions of a Ministry Leader.
+    * **Can:** Manage all core data (Parishes, Categories).
+    * **Can:** Receive email notifications for new registration requests.
+    * **Can:** Approve or deny any pending registration requests.
+
+### 3. Data Models
+
+* **Parish**
+    * `parish_id`: (Primary Key) Unique identifier.
+    * `name`: (Text) e.g., "Queen of Peace Catholic Church"
+    * `address`: (Text)
+    * `website_url`: (URL)
+    * `phone_number`: (Text)
+    * `mass_schedule`: (Text Block)
+
+* **User** (Represents Ministry Leaders & Admins)
+    * `user_id`: (Primary Key) Unique identifier.
+    * `email`: (Email) Unique, used for login.
+    * `password_hash`: (Text) Hashed and salted password.
+    * `full_name`: (Text)
+    * `associated_parish_id`: (Foreign Key to `Parish`)
+    * `requested_ministry_details`: (Text) A user-provided description of the ministry they own or wish to create, captured during registration.
+    * `role`: (Enum) 'leader' or 'admin'.
+    * `status`: (Enum) 'pending', 'approved', 'rejected'.
+
+* **Category** (Represents Ministry Types/Tags)
+    * `category_id`: (Primary Key) Unique identifier.
+    * `name`: (Text) e.g., "Service & Outreach".
+
+* **Ministry**
+    * `ministry_id`: (Primary Key) Unique identifier.
+    * `owner_user_id`: (Foreign Key to `User`)
+    * `associated_parish_id`: (Foreign Key to `Parish`)
+    * `name`: (Text)
+    * `description`: (Text Block)
+    * `contact_info`: (Text)
+    * `categories`: (Many-to-Many relationship with `Category`).
+
+* **Event** (Represents a single ad-hoc or recurring event series)
+    * `event_id`: (Primary Key) Unique identifier.
+    * `associated_ministry_id`: (Foreign Key to `Ministry`)
+    * `title`: (Text)
+    * `description`: (Text Block)
+    * `location`: (Text)
+    * `is_recurring`: (Boolean)
+    * `start_datetime`: (Timestamp) For ad-hoc events.
+    * `end_datetime`: (Timestamp) For ad-hoc events.
+    * `series_start_date`: (Date) For recurring events.
+    * `series_end_date`: (Date) For recurring events.
+    * `start_time_of_day`: (Time) For recurring events.
+    * `end_time_of_day`: (Time) For recurring events.
+    * `recurrence_rule`: (Text) RFC 5545 RRULE string.
+
+* **EventException** (Represents a modification to a recurring series instance)
+    * `exception_id`: (Primary Key) Unique identifier.
+    * `event_id`: (Foreign Key to `Event`)
+    * `original_occurrence_date`: (Date)
+    * `status`: (Enum) 'cancelled', 'rescheduled'.
+    * `new_start_datetime`: (Timestamp)
+    * `new_end_datetime`: (Timestamp)
+
+### 4. Application Functionality
+
+#### 4.1. Public Website
+* **Site Navigation:** The main navigation bar or footer must contain a clearly visible link with the text "Register as a Ministry Leader." This link is visible to all non-logged-in users.
+* **Event Calendar and Directories:** Functionality is unchanged.
+
+#### 4.2. Ministry Leader Registration Workflow
+* **Step 1: Initiation**
+    * An anonymous user clicks the "Register as a Ministry Leader" link.
+* **Step 2: Data Entry Form**
+    * The system presents a registration form with the following fields:
+        * `full_name`: (Text, required)
+        * `email`: (Text, required, must be a valid email format)
+        * `password`: (Password, required, with a second field for confirmation)
+        * `associated_parish_id`: (Dropdown populated from `Parish` table, required)
+        * `requested_ministry_details`: (Text Area, required, label: "Tell us about your ministry")
+        * `CAPTCHA`: (Required, must be validated server-side on submission).
+* **Step 3: Submission Processing & Notification**
+    * On submission, the system validates all fields and the CAPTCHA.
+    * If valid, it creates a new `User` record with the provided details, `role: 'leader'`, and `status: 'pending'`.
+    * The system then queries the `User` table for all users where `role = 'admin'`. It iterates through this list and sends an automated notification email to each administrator's email address. The email content must include the applicant's `full_name`, `email`, `associated_parish_name`, `requested_ministry_details`, and a direct link to the admin approval dashboard.
+* **Step 4: User Confirmation**
+    * The user is redirected to a confirmation page with the message: "Thank you for your submission. Your request is pending review. You will receive an email notification once a decision has been made."
+
+#### 4.3. Administrator Functionality
+* **View: User Approval Dashboard**
+    * An admin-only page that displays a table of all `User` objects where `status` is 'pending'. This view should be dynamically updated or require a refresh to reflect actions taken by other administrators.
+    * Each row must display the user's details (name, email, parish, requested ministry) and have two action buttons: "Approve" and "Reject".
+* **Workflow: Approval/Rejection**
+    * **Action Guard:** When any administrator clicks "Approve" or "Reject", the backend must first perform a check on the database to confirm the target user's `status` is still 'pending'. If it has already been changed (e.g., by another administrator), the action must fail, and the UI should inform the current admin that the request has already been processed.
+    * **On "Approve" click (if status is 'pending'):**
+        1.  The system updates the target `User` record's `status` to 'approved'.
+        2.  The system triggers an email to the applicant's `email` address with the subject "Your Hogtown Catholic Account is Approved" and a body message informing them they can now log in.
+    * **On "Reject" click (if status is 'pending'):**
+        1.  The system updates the target `User` record's `status` to 'rejected'.
+        2.  The system triggers an email to the applicant's `email` address with the subject "Hogtown Catholic Account Update" and a body message informing them their application was not approved.
+
+#### 4.4. Ministry Leader Portal (Post-Approval)
+* **Login and CRUD operations:** Functionality is unchanged. An approved user can log in and manage their owned ministries and events.
+
+### 5. Non-Functional Requirements
+* **Responsiveness:** The entire application must be fully responsive.
+* **Security:** All user passwords must be hashed. All forms must be protected against CSRF and XSS attacks. The registration endpoint must be rate-limited.
+* **Date/Time Handling:** The system must consistently handle timezones, assuming all user inputs are relative to the local timezone (America/New_York) and storing them in a standardized format (UTC).
+* **Email Delivery:** The system must integrate with a reliable transactional email service to ensure delivery of notification emails.

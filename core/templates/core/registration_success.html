@@ -1,0 +1,20 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Registration Submitted - Hogtown Catholic{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="alert alert-success">
+            <h4 class="alert-heading">Registration Submitted Successfully!</h4>
+            <p>Thank you for your submission. Your request is pending review. You will receive an email notification once a decision has been made.</p>
+            <hr>
+            <p class="mb-0">In the meantime, feel free to browse our <a href="{% url 'parish_directory' %}" class="alert-link">parish directory</a> and <a href="{% url 'event_calendar' %}" class="alert-link">upcoming events</a>.</p>
+        </div>
+        
+        <div class="text-center">
+            <a href="{% url 'parish_directory' %}" class="btn btn-primary">Return to Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

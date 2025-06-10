@@ -1,0 +1,8 @@
+Dear {{ user.full_name }},
+
+Your account has been approved! You can now log in to manage your ministry and events.
+
+Login at: {{ login_url }}
+
+Best regards,
+Hogtown Catholic Team

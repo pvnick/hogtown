@@ -1,0 +1,1 @@
+<div{% if widget.attrs.id %} id="{{ widget.attrs.id }}"{% endif %}{% if widget.attrs.class %} class="{{ widget.attrs.class }}"{% endif %}{% for name, value in widget.attrs.items %}{% if name != "id" and name != "class" %} {{ name }}="{{ value }}"{% endif %}{% endfor %}></div>
