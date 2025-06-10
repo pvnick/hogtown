@@ -353,14 +353,16 @@ class ErrorHandlingTest(CalendarEventGenerationTest):
 
     def test_malformed_date_parameters(self):
         """Test API behavior with malformed date parameters."""
-        # The view currently doesn't handle malformed dates gracefully
-        # This causes a ValueError to be raised, which Django handles as a 500 error
-        # We expect this to raise an exception during the test
-        with self.assertRaises(ValueError):
-            self.client.get(
-                reverse("calendar_events_api"),
-                {"start": "invalid-date", "end": "also-invalid"},
-            )
+        # The view now handles malformed dates gracefully by returning a 400 error
+        response = self.client.get(
+            reverse("calendar_events_api"),
+            {"start": "invalid-date", "end": "also-invalid"},
+        )
+        
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        self.assertIn("error", data)
+        self.assertIn("Invalid date format", data["error"])
 
 
 class AdHocEventsTest(CalendarEventGenerationTest):
