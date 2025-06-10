@@ -53,18 +53,19 @@ class UserAdmin(BaseUserAdmin):
 
         approved_count = 0
         skipped_count = 0
-        
+
         for user in pending_users:
             try:
                 with transaction.atomic():
-                    # Use select_for_update to lock the user record and prevent race conditions
+                    # Use select_for_update to lock user record and prevent
+                    # race conditions
                     user_to_update = User.objects.select_for_update().get(id=user.id)
-                    
+
                     # Double-check status after acquiring lock
                     if user_to_update.status != "pending":
                         skipped_count += 1
                         continue
-                    
+
                     user_to_update.status = "approved"
                     user_to_update.save()
 
@@ -77,7 +78,9 @@ class UserAdmin(BaseUserAdmin):
                         subject = render_to_string(
                             "core/emails/approval_subject.txt", context
                         ).strip()
-                        message = render_to_string("core/emails/approval_body.txt", context)
+                        message = render_to_string(
+                            "core/emails/approval_body.txt", context
+                        )
 
                         send_mail(
                             subject=subject,
@@ -89,26 +92,33 @@ class UserAdmin(BaseUserAdmin):
                         approved_count += 1
                     except Exception as e:
                         self.message_user(
-                            request, f"Error sending email to {user_to_update.email}: {e}", messages.ERROR
+                            request,
+                            f"Error sending email to {user_to_update.email}: {e}",
+                            messages.ERROR,
                         )
                         # Re-raise to trigger transaction rollback
                         raise
-                        
+
             except User.DoesNotExist:
                 # User was deleted by another admin
                 skipped_count += 1
                 continue
             except Exception as e:
                 self.message_user(
-                    request, f"Error processing user {user.username}: {e}", messages.ERROR
+                    request,
+                    f"Error processing user {user.username}: {e}",
+                    messages.ERROR,
                 )
                 skipped_count += 1
                 continue
 
-        message = f"Successfully approved {approved_count} users and sent notification emails."
+        message = (
+            f"Successfully approved {approved_count} users and sent "
+            "notification emails."
+        )
         if skipped_count > 0:
             message += f" Skipped {skipped_count} users (already processed or deleted)."
-        
+
         self.message_user(request, message, messages.SUCCESS)
 
     approve_users.short_description = "Approve selected users"
@@ -121,18 +131,19 @@ class UserAdmin(BaseUserAdmin):
 
         rejected_count = 0
         skipped_count = 0
-        
+
         for user in pending_users:
             try:
                 with transaction.atomic():
-                    # Use select_for_update to lock the user record and prevent race conditions
+                    # Use select_for_update to lock the user record and prevent
+                    # race conditions
                     user_to_update = User.objects.select_for_update().get(id=user.id)
-                    
+
                     # Double-check status after acquiring lock
                     if user_to_update.status != "pending":
                         skipped_count += 1
                         continue
-                    
+
                     user_to_update.status = "rejected"
                     user_to_update.save()
 
@@ -142,7 +153,9 @@ class UserAdmin(BaseUserAdmin):
                         subject = render_to_string(
                             "core/emails/rejection_subject.txt", context
                         ).strip()
-                        message = render_to_string("core/emails/rejection_body.txt", context)
+                        message = render_to_string(
+                            "core/emails/rejection_body.txt", context
+                        )
 
                         send_mail(
                             subject=subject,
@@ -154,26 +167,33 @@ class UserAdmin(BaseUserAdmin):
                         rejected_count += 1
                     except Exception as e:
                         self.message_user(
-                            request, f"Error sending email to {user_to_update.email}: {e}", messages.ERROR
+                            request,
+                            f"Error sending email to {user_to_update.email}: {e}",
+                            messages.ERROR,
                         )
                         # Re-raise to trigger transaction rollback
                         raise
-                        
+
             except User.DoesNotExist:
                 # User was deleted by another admin
                 skipped_count += 1
                 continue
             except Exception as e:
                 self.message_user(
-                    request, f"Error processing user {user.username}: {e}", messages.ERROR
+                    request,
+                    f"Error processing user {user.username}: {e}",
+                    messages.ERROR,
                 )
                 skipped_count += 1
                 continue
 
-        message = f"Successfully rejected {rejected_count} users and sent notification emails."
+        message = (
+            f"Successfully rejected {rejected_count} users and sent "
+            "notification emails."
+        )
         if skipped_count > 0:
             message += f" Skipped {skipped_count} users (already processed or deleted)."
-        
+
         self.message_user(request, message, messages.SUCCESS)
 
     reject_users.short_description = "Reject selected users"

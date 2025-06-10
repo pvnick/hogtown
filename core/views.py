@@ -137,7 +137,9 @@ def get_calendar_events(request):
                                     "description": event.description,
                                     "location": event.location,
                                     "ministry": event.associated_ministry.name,
-                                    "parish": event.associated_ministry.associated_parish.name,
+                                    "parish": (
+                                        event.associated_ministry.associated_parish.name
+                                    ),
                                 }
                             )
                             continue
@@ -162,22 +164,22 @@ def get_calendar_events(request):
                     )
 
             except (ValueError, TypeError, AttributeError, OverflowError) as e:
-                # Skip this event if we can't parse its recurrence rule or process its data
+                # Skip this event if we can't parse its recurrence rule or process data
                 logger.warning(
-                    "Failed to process recurring event %s: %s - %s", 
-                    event.id, 
-                    type(e).__name__, 
-                    str(e)
+                    "Failed to process recurring event %s: %s - %s",
+                    event.id,
+                    type(e).__name__,
+                    str(e),
                 )
                 continue
             except Exception as e:
                 # Log unexpected errors for monitoring
                 logger.error(
-                    "Unexpected error processing recurring event %s: %s - %s", 
-                    event.id, 
-                    type(e).__name__, 
-                    str(e), 
-                    exc_info=True
+                    "Unexpected error processing recurring event %s: %s - %s",
+                    event.id,
+                    type(e).__name__,
+                    str(e),
+                    exc_info=True,
                 )
                 continue
 
@@ -390,11 +392,11 @@ def register_ministry_leader(request):
                 except Exception as e:
                     # Log error but don't fail the registration
                     logger.error(
-                        "Failed to send admin notification email to %s: %s - %s", 
-                        admin.email, 
-                        type(e).__name__, 
+                        "Failed to send admin notification email to %s: %s - %s",
+                        admin.email,
+                        type(e).__name__,
                         str(e),
-                        exc_info=True
+                        exc_info=True,
                     )
 
             return redirect("registration_success")

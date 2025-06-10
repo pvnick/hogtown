@@ -100,7 +100,8 @@ class Event(models.Model):
                 ]
             ):
                 raise ValidationError(
-                    "Recurring events must have series dates, times, and recurrence rule."
+                    "Recurring events must have series dates, times, "
+                    "and recurrence rule."
                 )
         else:
             if not all([self.start_datetime, self.end_datetime]):

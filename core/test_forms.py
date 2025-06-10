@@ -19,7 +19,9 @@ class MinistryLeaderRegistrationFormTest(TestCase):
             "password1": "testpass123!",
             "password2": "testpass123!",
             "associated_parish": self.parish.id,
-            "requested_ministry_details": "I want to start a youth ministry focused on community service.",
+            "requested_ministry_details": (
+                "I want to start a youth ministry focused on community service."
+            ),
             "captcha": "valid-captcha-token",
         }
 

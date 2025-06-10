@@ -21,11 +21,16 @@ class MinistryLeaderRegistrationForm(UserCreationForm):
             attrs={
                 "class": "form-control",
                 "rows": 4,
-                "placeholder": "Please describe the ministry you lead or wish to create, "
-                "including its purpose and activities.",
+                "placeholder": (
+                    "Please describe the ministry you lead or wish to create, "
+                    "including its purpose and activities."
+                ),
             }
         ),
-        help_text="Please describe the ministry you lead or wish to create, including its purpose and activities.",
+        help_text=(
+            "Please describe the ministry you lead or wish to create, "
+            "including its purpose and activities."
+        ),
     )
     captcha = ProsopoField()
 
@@ -51,9 +56,9 @@ class MinistryLeaderRegistrationForm(UserCreationForm):
         # Update field labels and help texts
         self.fields["username"].help_text = None
         self.fields["password1"].help_text = None
-        self.fields[
-            "password2"
-        ].help_text = "Enter the same password as before, for verification."
+        self.fields["password2"].help_text = (
+            "Enter the same password as before, for verification."
+        )
 
     def clean_email(self):
         email = self.cleaned_data.get("email")

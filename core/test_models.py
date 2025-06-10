@@ -167,7 +167,7 @@ class EventModelTest(TestCase):
             title="Invalid Event",
             description="Missing dates",
             location="Test Location",
-            is_recurring=False
+            is_recurring=False,
             # Missing start_datetime and end_datetime
         )
         with self.assertRaises(ValidationError):
@@ -179,7 +179,7 @@ class EventModelTest(TestCase):
             title="Invalid Recurring Event",
             description="Missing recurrence data",
             location="Test Location",
-            is_recurring=True
+            is_recurring=True,
             # Missing required recurring fields
         )
         with self.assertRaises(ValidationError):
@@ -239,7 +239,7 @@ class EventExceptionModelTest(TestCase):
         exception = EventException(
             event=self.event,
             original_occurrence_date=date(2025, 1, 15),
-            status="rescheduled"
+            status="rescheduled",
             # Missing new_start_datetime and new_end_datetime
         )
         with self.assertRaises(ValidationError):
