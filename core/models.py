@@ -39,6 +39,19 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="leader")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
 
+    # Email notification tracking
+    approval_email_sent = models.BooleanField(
+        default=False,
+        help_text="Whether approval notification email was sent successfully",
+    )
+    rejection_email_sent = models.BooleanField(
+        default=False,
+        help_text="Whether rejection notification email was sent successfully",
+    )
+    email_failure_reason = models.TextField(
+        blank=True, help_text="Last email sending failure reason"
+    )
+
     def __str__(self):
         return f"{self.full_name} ({self.email})"
 
