@@ -1,0 +1,23 @@
+# Copy this file to terraform.tfvars and fill in your values
+# Required variables:
+
+# Your GitHub repository URL
+github_repository_url = "https://github.com/your-username/your-repo-name"
+
+# Optional variables (uncomment and modify as needed):
+
+# project_name = "hogtown"
+# aws_region = "us-east-1"
+# vpc_id = ""  # Leave empty for default VPC
+# enable_vpc_connector = true
+# staging_branch = "develop"
+# auto_deploy_enabled = true
+# staging_cpu = "0.25 vCPU"
+# staging_memory = "0.5 GB"
+# observability_enabled = false
+# log_retention_days = 7
+# health_check_path = "/"
+# health_check_healthy_threshold = 1
+# health_check_unhealthy_threshold = 3
+# health_check_interval = 10
+# health_check_timeout = 5

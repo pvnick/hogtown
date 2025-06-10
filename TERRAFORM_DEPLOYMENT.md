@@ -14,18 +14,20 @@ This setup deploys the Django application to AWS App Runner with separate stagin
 ```
 terraform/
 ├── shared/                    # Shared RDS instance and GitHub connection
-│   ├── backend.tf            # Remote state configuration
+│   ├── backend.tf.example    # Example backend configuration
 │   ├── main.tf
 │   ├── variables.tf
 │   └── outputs.tf
 ├── environments/
 │   ├── staging/              # Staging App Runner service
-│   │   ├── backend.tf        # Environment-specific state
+│   │   ├── backend.tf.example        # Example backend configuration
+│   │   ├── terraform.tfvars.example  # Example variables file
 │   │   ├── main.tf
 │   │   ├── variables.tf
 │   │   └── outputs.tf
 │   └── prod/                 # Production App Runner service
-│       ├── backend.tf
+│       ├── backend.tf.example
+│       ├── terraform.tfvars.example
 │       ├── main.tf
 │       ├── variables.tf
 │       └── outputs.tf
@@ -70,64 +72,96 @@ terraform/
 
 2. **Create Required S3 Buckets and DynamoDB Tables**:
    
-   **Important**: These resources must be created before running Terraform as they store the Terraform state files.
+   **Important**: These resources must be created before running Terraform as they store the Terraform state files. Use your own unique bucket names to avoid conflicts.
 
    ```bash
-   # Create S3 buckets for Terraform state
-   aws s3 mb s3://hogtown-terraform-state-shared --region us-east-1
-   aws s3 mb s3://hogtown-terraform-state-staging --region us-east-1  
-   aws s3 mb s3://hogtown-terraform-state-prod --region us-east-1
+   # Replace YOUR_UNIQUE_PREFIX with something unique to you (e.g., your-name-hogtown)
+   export BUCKET_PREFIX="YOUR_UNIQUE_PREFIX"
+   export AWS_REGION="us-east-1"
+
+   # Create S3 buckets for Terraform state (use your own unique names)
+   aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-shared --region ${AWS_REGION}
+   aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-staging --region ${AWS_REGION}
+   aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-prod --region ${AWS_REGION}
 
    # Enable versioning on state buckets for state history
-   aws s3api put-bucket-versioning --bucket hogtown-terraform-state-shared --versioning-configuration Status=Enabled
-   aws s3api put-bucket-versioning --bucket hogtown-terraform-state-staging --versioning-configuration Status=Enabled
-   aws s3api put-bucket-versioning --bucket hogtown-terraform-state-prod --versioning-configuration Status=Enabled
+   aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-shared --versioning-configuration Status=Enabled
+   aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-staging --versioning-configuration Status=Enabled
+   aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-prod --versioning-configuration Status=Enabled
 
    # Enable server-side encryption on state buckets
-   aws s3api put-bucket-encryption --bucket hogtown-terraform-state-shared --server-side-encryption-configuration '{
+   aws s3api put-bucket-encryption --bucket ${BUCKET_PREFIX}-terraform-state-shared --server-side-encryption-configuration '{
      "Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]
    }'
-   aws s3api put-bucket-encryption --bucket hogtown-terraform-state-staging --server-side-encryption-configuration '{
+   aws s3api put-bucket-encryption --bucket ${BUCKET_PREFIX}-terraform-state-staging --server-side-encryption-configuration '{
      "Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]
    }'
-   aws s3api put-bucket-encryption --bucket hogtown-terraform-state-prod --server-side-encryption-configuration '{
+   aws s3api put-bucket-encryption --bucket ${BUCKET_PREFIX}-terraform-state-prod --server-side-encryption-configuration '{
      "Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]
    }'
 
-   # Create DynamoDB tables for state locking  
+   # Create DynamoDB tables for state locking (use your own unique names)
    aws dynamodb create-table \
-     --table-name terraform-state-locks-shared \
+     --table-name ${BUCKET_PREFIX}-terraform-locks-shared \
      --attribute-definitions AttributeName=LockID,AttributeType=S \
      --key-schema AttributeName=LockID,KeyType=HASH \
      --billing-mode PAY_PER_REQUEST \
-     --region us-east-1
+     --region ${AWS_REGION}
 
    aws dynamodb create-table \
-     --table-name terraform-state-locks-staging \
+     --table-name ${BUCKET_PREFIX}-terraform-locks-staging \
      --attribute-definitions AttributeName=LockID,AttributeType=S \
      --key-schema AttributeName=LockID,KeyType=HASH \
      --billing-mode PAY_PER_REQUEST \
-     --region us-east-1
+     --region ${AWS_REGION}
 
    aws dynamodb create-table \
-     --table-name terraform-state-locks-prod \
+     --table-name ${BUCKET_PREFIX}-terraform-locks-prod \
      --attribute-definitions AttributeName=LockID,AttributeType=S \
      --key-schema AttributeName=LockID,KeyType=HASH \
      --billing-mode PAY_PER_REQUEST \
-     --region us-east-1
+     --region ${AWS_REGION}
    ```
 
-3. **Custom Backend Configuration** (Optional):
-   If you need to use different bucket names or regions, edit the `backend.tf` files in each directory:
-   - `terraform/shared/backend.tf`
-   - `terraform/environments/staging/backend.tf` 
-   - `terraform/environments/prod/backend.tf`
+3. **Configure Variables**:
+   Copy the example variable files and customize them with your settings:
+   ```bash
+   # For staging environment
+   cd terraform/environments/staging
+   cp terraform.tfvars.example terraform.tfvars
+   # Edit terraform.tfvars with your GitHub repository URL and other settings
 
-### 1. Deploy Shared Infrastructure
+   # For production environment  
+   cd ../prod
+   cp terraform.tfvars.example terraform.tfvars
+   # Edit terraform.tfvars with your GitHub repository URL and other settings
+   ```
+
+### 1. Initialize Terraform
+
+This project uses an S3 bucket to store the Terraform state. To avoid conflicts, you must use your own S3 bucket and DynamoDB table.
+
+**Do not create a backend.tf file.** Instead, you will pass the configuration to Terraform during initialization. Run the init command for each environment (shared, staging, prod) from its respective directory.
+
+Example for the shared environment:
 
 ```bash
 cd terraform/shared
-terraform init
+
+terraform init \
+    -backend-config="bucket=YOUR_UNIQUE_BUCKET_NAME" \
+    -backend-config="key=hogtown/shared.tfstate" \
+    -backend-config="region=YOUR_AWS_REGION" \
+    -backend-config="dynamodb_table=YOUR_DYNAMODB_LOCK_TABLE_NAME"
+```
+
+Replace the placeholder values with the names of the S3 bucket and DynamoDB table you created in the bootstrap step. You will repeat this process for the staging and prod environments, changing the key value accordingly (e.g., `key=hogtown/staging.tfstate`).
+
+### 2. Deploy Shared Infrastructure
+
+```bash
+cd terraform/shared
+# Initialize with your backend configuration (see above)
 terraform plan
 terraform apply
 ```
@@ -137,19 +171,36 @@ terraform apply
 - GitHub connection (requires manual authorization)
 - Master database credentials in Secrets Manager
 
-### 2. Deploy Database Setup
+### 3. Deploy Environment-Specific Infrastructure
 
 ```bash
-# Create environment-specific databases
+# Deploy staging environment
 cd ../environments/staging
-terraform init
-terraform plan -var="github_repository_url=https://github.com/username/repo"
-terraform apply -var="github_repository_url=https://github.com/username/repo"
 
-cd ../prod  
-terraform init
-terraform plan -var="github_repository_url=https://github.com/username/repo"
-terraform apply -var="github_repository_url=https://github.com/username/repo"
+# Initialize with backend configuration
+terraform init \
+    -backend-config="bucket=YOUR_UNIQUE_BUCKET_NAME" \
+    -backend-config="key=hogtown/staging.tfstate" \
+    -backend-config="region=YOUR_AWS_REGION" \
+    -backend-config="dynamodb_table=YOUR_DYNAMODB_LOCK_TABLE_NAME"
+
+# Plan and apply using your terraform.tfvars file
+terraform plan
+terraform apply
+
+# Deploy production environment
+cd ../prod
+
+# Initialize with backend configuration
+terraform init \
+    -backend-config="bucket=YOUR_UNIQUE_BUCKET_NAME" \
+    -backend-config="key=hogtown/prod.tfstate" \
+    -backend-config="region=YOUR_AWS_REGION" \
+    -backend-config="dynamodb_table=YOUR_DYNAMODB_LOCK_TABLE_NAME"
+
+# Plan and apply using your terraform.tfvars file
+terraform plan
+terraform apply
 ```
 
 ## Configuration Variables

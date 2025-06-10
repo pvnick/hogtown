@@ -56,11 +56,12 @@ ehthumbs.db
 Thumbs.db
 
 # Terraform
+.terraform/
 *.tfstate
 *.tfstate.*
 *.tfvars
 *.tfvars.json
-.terraform/
+backend.conf
 .terraform.lock.hcl
 terraform.tfplan
 terraform.tfplan.*

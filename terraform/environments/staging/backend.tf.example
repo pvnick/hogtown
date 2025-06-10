@@ -1,0 +1,6 @@
+# This is an example backend configuration.
+# Do not fill this file out. Instead, run terraform init with the
+# -backend-config flag as described in TERRAFORM_DEPLOYMENT.md.
+terraform {
+  backend "s3" {}
+}
