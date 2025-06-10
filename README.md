@@ -184,12 +184,10 @@ The project includes production-ready Terraform configurations for deploying to 
 terraform/
 ├── environments/
 │   ├── prod/                 # Production App Runner service
-│   │   ├── backend.tf.example       # Example backend configuration
 │   │   ├── main.tf           # Production configuration
 │   │   ├── variables.tf      # Production variables
 │   │   └── outputs.tf        # Production outputs
 │   └── staging/              # Staging App Runner service
-│       ├── backend.tf.example       # Example backend configuration
 │       ├── main.tf           # Staging configuration
 │       ├── variables.tf      # Staging variables
 │       └── outputs.tf        # Staging outputs
@@ -198,7 +196,6 @@ terraform/
 │   ├── database/            # RDS instance with security
 │   └── database-setup/      # Environment database creation
 ├── shared/                  # Shared infrastructure
-│   ├── backend.tf.example   # Example backend configuration
 │   ├── main.tf              # Shared RDS and GitHub connection
 │   ├── variables.tf         # Shared variables
 │   └── outputs.tf           # Shared outputs

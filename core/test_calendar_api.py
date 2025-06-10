@@ -358,7 +358,7 @@ class ErrorHandlingTest(CalendarEventGenerationTest):
             reverse("calendar_events_api"),
             {"start": "invalid-date", "end": "also-invalid"},
         )
-        
+
         self.assertEqual(response.status_code, 400)
         data = response.json()
         self.assertIn("error", data)

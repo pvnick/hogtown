@@ -14,18 +14,15 @@ This setup deploys the Django application to AWS App Runner with separate stagin
 ```
 terraform/
 ├── shared/                    # Shared RDS instance and GitHub connection
-│   ├── backend.tf.example    # Example backend configuration
 │   ├── main.tf
 │   ├── variables.tf
 │   └── outputs.tf
 ├── environments/
 │   ├── staging/              # Staging App Runner service
-│   │   ├── backend.tf.example        # Example backend configuration
 │   │   ├── main.tf
 │   │   ├── variables.tf
 │   │   └── outputs.tf
 │   └── prod/                 # Production App Runner service
-│       ├── backend.tf.example
 │       ├── main.tf
 │       ├── variables.tf
 │       └── outputs.tf
