@@ -15,9 +15,9 @@ provider "aws" {
 data "terraform_remote_state" "shared" {
   backend = "s3"
   config = {
-    bucket = "hogtown-terraform-state-shared"
-    key    = "shared/terraform.tfstate"
-    region = "us-east-1"
+    bucket = var.shared_state_bucket
+    key    = var.shared_state_key
+    region = var.shared_state_region
   }
 }
 

@@ -21,20 +21,24 @@ terraform/
 ├── environments/
 │   ├── staging/              # Staging App Runner service
 │   │   ├── backend.tf.example        # Example backend configuration
-│   │   ├── terraform.tfvars.example  # Example variables file
 │   │   ├── main.tf
 │   │   ├── variables.tf
 │   │   └── outputs.tf
 │   └── prod/                 # Production App Runner service
 │       ├── backend.tf.example
-│       ├── terraform.tfvars.example
 │       ├── main.tf
 │       ├── variables.tf
 │       └── outputs.tf
-└── modules/
-    ├── database/             # RDS instance with security
-    ├── database-setup/       # Environment database creation
-    └── apprunner/           # App Runner with VPC connector
+├── modules/
+│   ├── database/             # RDS instance with security
+│   ├── database-setup/       # Environment database creation
+│   └── apprunner/           # App Runner with VPC connector
+└── config/                   # Configuration templates
+    ├── shared.tfbackend.example     # Shared backend config template
+    ├── staging.tfbackend.example    # Staging backend config template
+    ├── prod.tfbackend.example       # Production backend config template
+    ├── staging.tfvars.example       # Staging variables template
+    └── prod.tfvars.example          # Production variables template
 ```
 
 ## Key Improvements
@@ -123,45 +127,48 @@ terraform/
      --region ${AWS_REGION}
    ```
 
-3. **Configure Variables**:
-   Copy the example variable files and customize them with your settings:
+3. **Configure Backend and Variables**:
+   Copy the example configuration files and customize them with your settings:
    ```bash
-   # For staging environment
-   cd terraform/environments/staging
-   cp terraform.tfvars.example terraform.tfvars
-   # Edit terraform.tfvars with your GitHub repository URL and other settings
+   # Copy backend configuration files
+   cd config
+   cp shared.tfbackend.example shared.tfbackend
+   cp staging.tfbackend.example staging.tfbackend  
+   cp prod.tfbackend.example prod.tfbackend
+   # Edit each .tfbackend file with your unique bucket names
 
-   # For production environment  
-   cd ../prod
-   cp terraform.tfvars.example terraform.tfvars
-   # Edit terraform.tfvars with your GitHub repository URL and other settings
+   # Copy variable files
+   cp staging.tfvars.example staging.tfvars
+   cp prod.tfvars.example prod.tfvars
+   # Edit each .tfvars file with:
+   # - shared_state_bucket: Your unique shared state bucket name  
+   # - github_repository_url: Your GitHub repository URL
+   # - Other optional settings as needed
    ```
+
+   **Important**: Both staging and prod environments must use the same `shared_state_bucket` value to access the shared infrastructure state.
 
 ### 1. Initialize Terraform
 
 This project uses an S3 bucket to store the Terraform state. To avoid conflicts, you must use your own S3 bucket and DynamoDB table.
 
-**Do not create a backend.tf file.** Instead, you will pass the configuration to Terraform during initialization. Run the init command for each environment (shared, staging, prod) from its respective directory.
+**Use the backend configuration files** from the `config/` directory. Initialize each environment from its respective directory using the `-backend-config-file` option.
 
 Example for the shared environment:
 
 ```bash
 cd terraform/shared
-
-terraform init \
-    -backend-config="bucket=YOUR_UNIQUE_BUCKET_NAME" \
-    -backend-config="key=hogtown/shared.tfstate" \
-    -backend-config="region=YOUR_AWS_REGION" \
-    -backend-config="dynamodb_table=YOUR_DYNAMODB_LOCK_TABLE_NAME"
+terraform init -backend-config-file=../../config/shared.tfbackend
 ```
 
-Replace the placeholder values with the names of the S3 bucket and DynamoDB table you created in the bootstrap step. You will repeat this process for the staging and prod environments, changing the key value accordingly (e.g., `key=hogtown/staging.tfstate`).
+This approach uses the backend configuration file you created in the `config/` directory, making the initialization process cleaner and more maintainable.
 
 ### 2. Deploy Shared Infrastructure
 
 ```bash
 cd terraform/shared
 # Initialize with your backend configuration (see above)
+terraform init -backend-config-file=../../config/shared.tfbackend
 terraform plan
 terraform apply
 ```
@@ -173,34 +180,30 @@ terraform apply
 
 ### 3. Deploy Environment-Specific Infrastructure
 
+**Important**: The staging and prod environments require access to the shared infrastructure state. Make sure your `config/staging.tfvars` and `config/prod.tfvars` files contain the correct `shared_state_bucket` value.
+
 ```bash
 # Deploy staging environment
 cd ../environments/staging
 
-# Initialize with backend configuration
-terraform init \
-    -backend-config="bucket=YOUR_UNIQUE_BUCKET_NAME" \
-    -backend-config="key=hogtown/staging.tfstate" \
-    -backend-config="region=YOUR_AWS_REGION" \
-    -backend-config="dynamodb_table=YOUR_DYNAMODB_LOCK_TABLE_NAME"
+# Initialize with backend configuration file
+terraform init -backend-config-file=../../config/staging.tfbackend
 
-# Plan and apply using your terraform.tfvars file
-terraform plan
-terraform apply
+# Plan and apply using your variables file from config directory
+# This will automatically access shared state using the shared_state_bucket variable
+terraform plan -var-file=../../config/staging.tfvars
+terraform apply -var-file=../../config/staging.tfvars
 
 # Deploy production environment
 cd ../prod
 
-# Initialize with backend configuration
-terraform init \
-    -backend-config="bucket=YOUR_UNIQUE_BUCKET_NAME" \
-    -backend-config="key=hogtown/prod.tfstate" \
-    -backend-config="region=YOUR_AWS_REGION" \
-    -backend-config="dynamodb_table=YOUR_DYNAMODB_LOCK_TABLE_NAME"
+# Initialize with backend configuration file
+terraform init -backend-config-file=../../config/prod.tfbackend
 
-# Plan and apply using your terraform.tfvars file
-terraform plan
-terraform apply
+# Plan and apply using your variables file from config directory
+# This will automatically access shared state using the shared_state_bucket variable
+terraform plan -var-file=../../config/prod.tfvars
+terraform apply -var-file=../../config/prod.tfvars
 ```
 
 ## Configuration Variables

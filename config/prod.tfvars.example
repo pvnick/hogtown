@@ -1,6 +1,9 @@
 # Copy this file to terraform.tfvars and fill in your values
 # Required variables:
 
+# Backend configuration - must match your S3 bucket for shared state
+shared_state_bucket = "YOUR_UNIQUE_PREFIX-terraform-state-shared"
+
 # Your GitHub repository URL
 github_repository_url = "https://github.com/your-username/your-repo-name"
 
@@ -8,6 +11,8 @@ github_repository_url = "https://github.com/your-username/your-repo-name"
 
 # project_name = "hogtown"
 # aws_region = "us-east-1"
+# shared_state_key = "hogtown/shared.tfstate"  # Usually matches default
+# shared_state_region = "us-east-1"  # Usually matches aws_region
 # vpc_id = ""  # Leave empty for default VPC
 # enable_vpc_connector = true
 # prod_branch = "main"

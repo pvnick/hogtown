@@ -184,12 +184,12 @@ The project includes production-ready Terraform configurations for deploying to 
 terraform/
 ├── environments/
 │   ├── prod/                 # Production App Runner service
-│   │   ├── backend.tf        # Backend configuration with state location
+│   │   ├── backend.tf.example       # Example backend configuration
 │   │   ├── main.tf           # Production configuration
 │   │   ├── variables.tf      # Production variables
 │   │   └── outputs.tf        # Production outputs
 │   └── staging/              # Staging App Runner service
-│       ├── backend.tf        # Backend configuration with state location
+│       ├── backend.tf.example       # Example backend configuration
 │       ├── main.tf           # Staging configuration
 │       ├── variables.tf      # Staging variables
 │       └── outputs.tf        # Staging outputs
@@ -197,78 +197,101 @@ terraform/
 │   ├── apprunner/           # App Runner with VPC connector
 │   ├── database/            # RDS instance with security
 │   └── database-setup/      # Environment database creation
-└── shared/                  # Shared infrastructure
-    ├── backend.tf           # Backend configuration with state location
-    ├── main.tf              # Shared RDS and GitHub connection
-    ├── variables.tf         # Shared variables
-    └── outputs.tf           # Shared outputs
+├── shared/                  # Shared infrastructure
+│   ├── backend.tf.example   # Example backend configuration
+│   ├── main.tf              # Shared RDS and GitHub connection
+│   ├── variables.tf         # Shared variables
+│   └── outputs.tf           # Shared outputs
+└── config/                  # Configuration templates
+    ├── shared.tfbackend.example     # Shared backend config template
+    ├── staging.tfbackend.example    # Staging backend config template
+    ├── prod.tfbackend.example       # Production backend config template
+    ├── staging.tfvars.example       # Staging variables template
+    └── prod.tfvars.example          # Production variables template
 ```
 
 ### Prerequisites
 
 - AWS CLI configured with appropriate permissions
-- **S3 buckets and DynamoDB tables for remote state** (create these first)
+- **S3 buckets and DynamoDB tables for remote state** (create these first with unique names)
 - GitHub repository URL for App Runner source connection
 
 ### Backend Setup
 
-Before deploying, create the required S3 buckets and DynamoDB tables for Terraform state management:
+This repository uses a decoupled backend configuration to make it public-ready. Before deploying, you must:
+
+1. **Create your own unique S3 buckets and DynamoDB tables** (to avoid naming conflicts):
 
 ```bash
+# Replace YOUR_UNIQUE_PREFIX with something unique to you
+export BUCKET_PREFIX="YOUR_UNIQUE_PREFIX"
+export AWS_REGION="us-east-1"
+
 # Create S3 buckets for Terraform state
-aws s3 mb s3://hogtown-terraform-state-shared --region us-east-1
-aws s3 mb s3://hogtown-terraform-state-staging --region us-east-1  
-aws s3 mb s3://hogtown-terraform-state-prod --region us-east-1
+aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-shared --region ${AWS_REGION}
+aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-staging --region ${AWS_REGION}  
+aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-prod --region ${AWS_REGION}
 
 # Enable versioning on state buckets
-aws s3api put-bucket-versioning --bucket hogtown-terraform-state-shared --versioning-configuration Status=Enabled
-aws s3api put-bucket-versioning --bucket hogtown-terraform-state-staging --versioning-configuration Status=Enabled
-aws s3api put-bucket-versioning --bucket hogtown-terraform-state-prod --versioning-configuration Status=Enabled
+aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-shared --versioning-configuration Status=Enabled
+aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-staging --versioning-configuration Status=Enabled
+aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-prod --versioning-configuration Status=Enabled
 
 # Create DynamoDB tables for state locking  
 aws dynamodb create-table \
-  --table-name terraform-state-locks-shared \
+  --table-name ${BUCKET_PREFIX}-terraform-locks-shared \
   --attribute-definitions AttributeName=LockID,AttributeType=S \
   --key-schema AttributeName=LockID,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
-  --region us-east-1
+  --region ${AWS_REGION}
 
 aws dynamodb create-table \
-  --table-name terraform-state-locks-staging \
+  --table-name ${BUCKET_PREFIX}-terraform-locks-staging \
   --attribute-definitions AttributeName=LockID,AttributeType=S \
   --key-schema AttributeName=LockID,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
-  --region us-east-1
+  --region ${AWS_REGION}
 
 aws dynamodb create-table \
-  --table-name terraform-state-locks-prod \
+  --table-name ${BUCKET_PREFIX}-terraform-locks-prod \
   --attribute-definitions AttributeName=LockID,AttributeType=S \
   --key-schema AttributeName=LockID,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
-  --region us-east-1
+  --region ${AWS_REGION}
 ```
+
+2. **Configure backend and variables**: Copy and edit the configuration files in the `config/` directory:
+   ```bash
+   cd config
+   cp shared.tfbackend.example shared.tfbackend
+   cp staging.tfbackend.example staging.tfbackend
+   cp prod.tfbackend.example prod.tfbackend
+   cp staging.tfvars.example staging.tfvars
+   cp prod.tfvars.example prod.tfvars
+   # Edit all files with your unique bucket names and GitHub repository URL
+   ```
 
 ### Quick Deployment
 
 1. **Deploy shared infrastructure** (RDS, GitHub connection):
    ```bash
    cd terraform/shared
-   terraform init
+   terraform init -backend-config-file=../../config/shared.tfbackend
    terraform apply
    ```
 
 2. **Deploy staging environment**:
    ```bash
    cd terraform/environments/staging
-   terraform init
-   terraform apply -var="github_repository_url=https://github.com/username/repo"
+   terraform init -backend-config-file=../../config/staging.tfbackend
+   terraform apply -var-file=../../config/staging.tfvars
    ```
 
 3. **Deploy production environment**:
    ```bash
    cd terraform/environments/prod
-   terraform init
-   terraform apply -var="github_repository_url=https://github.com/username/repo"
+   terraform init -backend-config-file=../../config/prod.tfbackend
+   terraform apply -var-file=../../config/prod.tfvars
    ```
 
 ### Key Features

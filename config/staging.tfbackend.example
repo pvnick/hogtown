@@ -1,0 +1,9 @@
+# Example backend configuration for staging environment
+# Copy this file to staging.tfbackend and fill in your values
+# Used with: terraform init -backend-config-file=../../config/staging.tfbackend
+
+bucket         = "YOUR_UNIQUE_PREFIX-terraform-state-staging"
+key            = "hogtown/staging.tfstate"
+region         = "us-east-1"
+dynamodb_table = "YOUR_UNIQUE_PREFIX-terraform-locks-staging"
+encrypt        = true

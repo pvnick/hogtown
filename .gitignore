@@ -67,7 +67,7 @@ terraform.tfplan
 terraform.tfplan.*
 
 # Backend configuration (contains bucket names)
-config/*.tfbackend
+*.tfbackend
 
 # AWS
 .aws/

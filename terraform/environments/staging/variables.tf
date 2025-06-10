@@ -10,6 +10,24 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+# Backend configuration variables for shared state access
+variable "shared_state_bucket" {
+  description = "S3 bucket name containing shared Terraform state"
+  type        = string
+}
+
+variable "shared_state_key" {
+  description = "S3 key for shared Terraform state file"
+  type        = string
+  default     = "hogtown/shared.tfstate"
+}
+
+variable "shared_state_region" {
+  description = "AWS region for shared state bucket"
+  type        = string
+  default     = "us-east-1"
+}
+
 variable "vpc_id" {
   description = "VPC ID to deploy App Runner VPC connector in (leave empty for default VPC)"
   type        = string
