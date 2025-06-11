@@ -71,7 +71,72 @@ terraform/
    - IAM role creation
    - VPC connector management
 
-2. **Create Required S3 Buckets and DynamoDB Tables**:
+### Backend Infrastructure Setup
+
+You have two options for setting up the required S3 buckets and DynamoDB tables:
+
+#### Option 1: Automated Setup (Recommended)
+
+Use the provided bootstrap script to automatically create all required AWS resources:
+
+**Basic Usage:**
+```bash
+# Quick setup with auto-generated unique prefix
+./bootstrap-terraform-backend.sh
+
+# Get detailed help and see all examples
+./bootstrap-terraform-backend.sh --help
+```
+
+**Advanced Usage Examples:**
+```bash
+# Custom prefix and region
+./bootstrap-terraform-backend.sh --prefix mycompany-hogtown-456 --region us-west-2
+
+# Complete setup with all options specified
+./bootstrap-terraform-backend.sh \
+  --prefix myproject-123 \
+  --region us-east-1 \
+  --profile production \
+  --github-url https://github.com/your-username/your-repo
+
+# Using short form arguments for quick setup
+./bootstrap-terraform-backend.sh -p myproject-789 -r eu-west-1 -g https://github.com/user/repo
+
+# Use with a specific AWS profile (useful for multiple AWS accounts)
+./bootstrap-terraform-backend.sh --profile staging --prefix staging-env-001
+```
+
+**Complete Argument Reference:**
+| Argument | Short | Description | Default | Example |
+|----------|-------|-------------|---------|---------|
+| `--prefix` | `-p` | Unique prefix for AWS resources | Auto-generated | `myproject-123` |
+| `--region` | `-r` | AWS region | `us-east-1` | `us-west-2` |
+| `--profile` | | AWS CLI profile | `default` | `production` |
+| `--github-url` | `-g` | GitHub repository URL | None | `https://github.com/user/repo` |
+| `--help` | `-h` | Show help and usage examples | | |
+
+**What the script automatically does:**
+- ✅ **Validates AWS credentials** before making any changes
+- ✅ **Creates S3 buckets** with versioning and encryption enabled
+- ✅ **Creates DynamoDB tables** for state locking with proper configuration
+- ✅ **Generates configuration files** from templates in the `config/` directory
+- ✅ **Updates GitHub URLs** in tfvars files (if provided)
+- ✅ **Provides next steps** with exact commands to run
+- ✅ **Uses unique prefixes** to avoid naming conflicts with other users
+
+**Generated Files:**
+- `config/shared.tfbackend` - Backend config for shared infrastructure
+- `config/staging.tfbackend` - Backend config for staging environment  
+- `config/prod.tfbackend` - Backend config for production environment
+- `config/staging.tfvars` - Variables for staging deployment
+- `config/prod.tfvars` - Variables for production deployment
+
+#### Option 2: Manual Setup
+
+If you need to create your own infrastructure manually:
+
+**Create Required S3 Buckets and DynamoDB Tables**:
    
    **Important**: These resources must be created before running Terraform as they store the Terraform state files. Use your own unique bucket names to avoid conflicts.
 
@@ -79,27 +144,22 @@ terraform/
    # Replace YOUR_UNIQUE_PREFIX with something unique to you (e.g., your-name-hogtown)
    export BUCKET_PREFIX="YOUR_UNIQUE_PREFIX"
    export AWS_REGION="us-east-1"
+   export AWS_PROFILE="your-profile-name"
 
    # Create S3 buckets for Terraform state (use your own unique names)
-   aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-shared --region ${AWS_REGION}
-   aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-staging --region ${AWS_REGION}
-   aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-prod --region ${AWS_REGION}
+   aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-shared --region ${AWS_REGION} --profile ${AWS_PROFILE}
+   aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-staging --region ${AWS_REGION} --profile ${AWS_PROFILE}
+   aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-prod --region ${AWS_REGION} --profile ${AWS_PROFILE}
 
    # Enable versioning on state buckets for state history
-   aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-shared --versioning-configuration Status=Enabled
-   aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-staging --versioning-configuration Status=Enabled
-   aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-prod --versioning-configuration Status=Enabled
+   aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-shared --versioning-configuration Status=Enabled --profile ${AWS_PROFILE}
+   aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-staging --versioning-configuration Status=Enabled --profile ${AWS_PROFILE}
+   aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-prod --versioning-configuration Status=Enabled --profile ${AWS_PROFILE}
 
    # Enable server-side encryption on state buckets
-   aws s3api put-bucket-encryption --bucket ${BUCKET_PREFIX}-terraform-state-shared --server-side-encryption-configuration '{
-     "Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]
-   }'
-   aws s3api put-bucket-encryption --bucket ${BUCKET_PREFIX}-terraform-state-staging --server-side-encryption-configuration '{
-     "Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]
-   }'
-   aws s3api put-bucket-encryption --bucket ${BUCKET_PREFIX}-terraform-state-prod --server-side-encryption-configuration '{
-     "Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]
-   }'
+   aws s3api put-bucket-encryption --bucket ${BUCKET_PREFIX}-terraform-state-shared --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}' --profile ${AWS_PROFILE}
+   aws s3api put-bucket-encryption --bucket ${BUCKET_PREFIX}-terraform-state-staging --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}' --profile ${AWS_PROFILE}
+   aws s3api put-bucket-encryption --bucket ${BUCKET_PREFIX}-terraform-state-prod --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}' --profile ${AWS_PROFILE}
 
    # Create DynamoDB tables for state locking (use your own unique names)
    aws dynamodb create-table \
@@ -107,24 +167,27 @@ terraform/
      --attribute-definitions AttributeName=LockID,AttributeType=S \
      --key-schema AttributeName=LockID,KeyType=HASH \
      --billing-mode PAY_PER_REQUEST \
-     --region ${AWS_REGION}
+     --region ${AWS_REGION} \
+     --profile ${AWS_PROFILE}
 
    aws dynamodb create-table \
      --table-name ${BUCKET_PREFIX}-terraform-locks-staging \
      --attribute-definitions AttributeName=LockID,AttributeType=S \
      --key-schema AttributeName=LockID,KeyType=HASH \
      --billing-mode PAY_PER_REQUEST \
-     --region ${AWS_REGION}
+     --region ${AWS_REGION} \
+     --profile ${AWS_PROFILE}
 
    aws dynamodb create-table \
      --table-name ${BUCKET_PREFIX}-terraform-locks-prod \
      --attribute-definitions AttributeName=LockID,AttributeType=S \
      --key-schema AttributeName=LockID,KeyType=HASH \
      --billing-mode PAY_PER_REQUEST \
-     --region ${AWS_REGION}
+     --region ${AWS_REGION} \
+     --profile ${AWS_PROFILE}
    ```
 
-3. **Configure Backend and Variables**:
+**Configure Backend and Variables**:
    Copy the example configuration files and customize them with your settings:
    ```bash
    # Copy backend configuration files
@@ -145,26 +208,14 @@ terraform/
 
    **Important**: Both staging and prod environments must use the same `shared_state_bucket` value to access the shared infrastructure state.
 
-### 1. Initialize Terraform
+### Terraform Deployment
 
-This project uses an S3 bucket to store the Terraform state. To avoid conflicts, you must use your own S3 bucket and DynamoDB table.
+Once you have the S3 buckets, DynamoDB tables, and configuration files set up (either via the bootstrap script or manually), you can deploy the infrastructure:
 
-**Use the backend configuration files** from the `config/` directory. Initialize each environment from its respective directory using the `-backend-config-file` option.
-
-Example for the shared environment:
+### 1. Deploy Shared Infrastructure
 
 ```bash
 cd terraform/shared
-terraform init -backend-config-file=../../config/shared.tfbackend
-```
-
-This approach uses the backend configuration file you created in the `config/` directory, making the initialization process cleaner and more maintainable.
-
-### 2. Deploy Shared Infrastructure
-
-```bash
-cd terraform/shared
-# Initialize with your backend configuration (see above)
 terraform init -backend-config-file=../../config/shared.tfbackend
 terraform plan
 terraform apply
@@ -175,30 +226,20 @@ terraform apply
 - GitHub connection (requires manual authorization)
 - Master database credentials in Secrets Manager
 
-### 3. Deploy Environment-Specific Infrastructure
+### 2. Deploy Environment-Specific Infrastructure
 
 **Important**: The staging and prod environments require access to the shared infrastructure state. Make sure your `config/staging.tfvars` and `config/prod.tfvars` files contain the correct `shared_state_bucket` value.
 
 ```bash
 # Deploy staging environment
-cd ../environments/staging
-
-# Initialize with backend configuration file
+cd terraform/environments/staging
 terraform init -backend-config-file=../../config/staging.tfbackend
-
-# Plan and apply using your variables file from config directory
-# This will automatically access shared state using the shared_state_bucket variable
 terraform plan -var-file=../../config/staging.tfvars
 terraform apply -var-file=../../config/staging.tfvars
 
 # Deploy production environment
 cd ../prod
-
-# Initialize with backend configuration file
 terraform init -backend-config-file=../../config/prod.tfbackend
-
-# Plan and apply using your variables file from config directory
-# This will automatically access shared state using the shared_state_bucket variable
 terraform plan -var-file=../../config/prod.tfvars
 terraform apply -var-file=../../config/prod.tfvars
 ```

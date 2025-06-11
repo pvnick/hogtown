@@ -169,7 +169,7 @@ hogtown/
 
 ## Terraform Infrastructure
 
-The project includes production-ready Terraform configurations for deploying to AWS App Runner with multi-environment support. See `TERRAFORM_DEPLOYMENT.md` for detailed deployment instructions.
+The project includes production-ready Terraform configurations for deploying to AWS App Runner with multi-environment support. See [`docs/TERRAFORM_DEPLOYMENT.md`](docs/TERRAFORM_DEPLOYMENT.md) for detailed deployment instructions.
 
 ### Architecture Overview
 
@@ -215,9 +215,57 @@ terraform/
 
 ### Backend Setup
 
-This repository uses a decoupled backend configuration to make it public-ready. Before deploying, you must:
+This repository uses a decoupled backend configuration to make it public-ready. You have two options for setting up the backend:
 
-1. **Create your own unique S3 buckets and DynamoDB tables** (to avoid naming conflicts):
+#### Option 1: Automated Setup (Recommended)
+
+Use the provided bootstrap script to automatically create all required AWS resources and configuration files:
+
+**Basic Usage:**
+```bash
+# Quick setup with auto-generated unique prefix
+./bootstrap-terraform-backend.sh
+
+# See all available options and examples
+./bootstrap-terraform-backend.sh --help
+```
+
+**Advanced Usage Examples:**
+```bash
+# Custom prefix and region
+./bootstrap-terraform-backend.sh --prefix mycompany-hogtown-456 --region us-west-2
+
+# Complete setup with all options
+./bootstrap-terraform-backend.sh \
+  --prefix myproject-123 \
+  --region us-east-1 \
+  --profile production \
+  --github-url https://github.com/your-username/your-repo
+
+# Using short form arguments
+./bootstrap-terraform-backend.sh -p myproject-789 -r eu-west-1 -g https://github.com/user/repo
+```
+
+**Available Arguments:**
+- `-p, --prefix PREFIX` - Unique prefix for AWS resources (default: auto-generated)
+- `-r, --region REGION` - AWS region (default: us-east-1)
+- `--profile PROFILE` - AWS CLI profile to use (default: default)
+- `-g, --github-url URL` - GitHub repository URL (optional, avoids manual editing)
+- `-h, --help` - Show detailed help and usage examples
+
+**What the script does:**
+- ✅ Creates S3 buckets for Terraform state with versioning and encryption
+- ✅ Creates DynamoDB tables for state locking
+- ✅ Generates all configuration files in the `config/` directory
+- ✅ Validates AWS credentials before starting
+- ✅ Provides clear next steps for deployment
+- ✅ Uses unique prefixes to avoid naming conflicts
+
+#### Option 2: Manual Setup
+
+If you prefer to set up the infrastructure manually:
+
+1. **Create your own S3 buckets and DynamoDB tables** using this pattern:
 
 ```bash
 # Replace YOUR_UNIQUE_PREFIX with something unique to you
@@ -225,14 +273,18 @@ export BUCKET_PREFIX="YOUR_UNIQUE_PREFIX"
 export AWS_REGION="us-east-1"
 
 # Create S3 buckets for Terraform state
-aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-shared --region ${AWS_REGION}
-aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-staging --region ${AWS_REGION}  
-aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-prod --region ${AWS_REGION}
+aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-shared --region ${AWS_REGION} --profile YOUR_PROFILE
+aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-staging --region ${AWS_REGION} --profile YOUR_PROFILE
+aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-prod --region ${AWS_REGION} --profile YOUR_PROFILE
 
-# Enable versioning on state buckets
-aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-shared --versioning-configuration Status=Enabled
-aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-staging --versioning-configuration Status=Enabled
-aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-prod --versioning-configuration Status=Enabled
+# Enable versioning and encryption on state buckets
+aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-shared --versioning-configuration Status=Enabled --profile YOUR_PROFILE
+aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-staging --versioning-configuration Status=Enabled --profile YOUR_PROFILE
+aws s3api put-bucket-versioning --bucket ${BUCKET_PREFIX}-terraform-state-prod --versioning-configuration Status=Enabled --profile YOUR_PROFILE
+
+aws s3api put-bucket-encryption --bucket ${BUCKET_PREFIX}-terraform-state-shared --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}' --profile YOUR_PROFILE
+aws s3api put-bucket-encryption --bucket ${BUCKET_PREFIX}-terraform-state-staging --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}' --profile YOUR_PROFILE
+aws s3api put-bucket-encryption --bucket ${BUCKET_PREFIX}-terraform-state-prod --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}' --profile YOUR_PROFILE
 
 # Create DynamoDB tables for state locking  
 aws dynamodb create-table \
@@ -240,21 +292,24 @@ aws dynamodb create-table \
   --attribute-definitions AttributeName=LockID,AttributeType=S \
   --key-schema AttributeName=LockID,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
-  --region ${AWS_REGION}
+  --region ${AWS_REGION} \
+  --profile YOUR_PROFILE
 
 aws dynamodb create-table \
   --table-name ${BUCKET_PREFIX}-terraform-locks-staging \
   --attribute-definitions AttributeName=LockID,AttributeType=S \
   --key-schema AttributeName=LockID,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
-  --region ${AWS_REGION}
+  --region ${AWS_REGION} \
+  --profile YOUR_PROFILE
 
 aws dynamodb create-table \
   --table-name ${BUCKET_PREFIX}-terraform-locks-prod \
   --attribute-definitions AttributeName=LockID,AttributeType=S \
   --key-schema AttributeName=LockID,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
-  --region ${AWS_REGION}
+  --region ${AWS_REGION} \
+  --profile YOUR_PROFILE
 ```
 
 2. **Configure backend and variables**: Copy and edit the configuration files in the `config/` directory:
@@ -299,7 +354,7 @@ aws dynamodb create-table \
 - **Scalability**: Environment-specific resource allocation and health check configuration
 - **Cost Optimization**: Configurable instance classes and monitoring levels per environment
 
-**Note**: See `TERRAFORM_DEPLOYMENT.md` for comprehensive deployment instructions, security considerations, troubleshooting guides, and cost optimization strategies.
+**Note**: See [`docs/TERRAFORM_DEPLOYMENT.md`](docs/TERRAFORM_DEPLOYMENT.md) for comprehensive deployment instructions, security considerations, troubleshooting guides, and cost optimization strategies.
 
 ## License
 
