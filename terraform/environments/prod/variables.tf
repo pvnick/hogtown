@@ -28,18 +28,6 @@ variable "shared_state_region" {
   default     = "us-east-1"
 }
 
-variable "vpc_id" {
-  description = "VPC ID to deploy App Runner VPC connector in (leave empty for default VPC)"
-  type        = string
-  default     = ""
-}
-
-variable "enable_vpc_connector" {
-  description = "Enable VPC connector for private network access to RDS"
-  type        = bool
-  default     = true
-}
-
 variable "github_repository_url" {
   description = "GitHub repository URL (e.g., https://github.com/username/repo)"
   type        = string

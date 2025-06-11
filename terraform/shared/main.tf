@@ -15,15 +15,48 @@ provider "aws" {
   region = var.aws_region
 }
 
+# Get available availability zones
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+# VPC with private subnets for RDS
+resource "aws_vpc" "main" {
+  cidr_block           = var.vpc_cidr
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  tags = {
+    Name    = "${var.project_name}-vpc"
+    Project = var.project_name
+  }
+}
+
+# Private Subnets for RDS (3 across different AZs, /28 = 16 IPs each)
+resource "aws_subnet" "rds_private" {
+  count = 3
+
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = cidrsubnet(var.vpc_cidr, 12, count.index)
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name    = "${var.project_name}-rds-private-subnet-${count.index + 1}"
+    Project = var.project_name
+    Type    = "Private"
+    Purpose = "RDS"
+  }
+}
+
 # Shared database infrastructure
 module "database" {
   source = "../modules/database"
   
   project_name               = var.project_name
-  vpc_id                    = var.vpc_id
-  availability_zones        = var.availability_zones
+  vpc_id                    = aws_vpc.main.id
+  availability_zones        = [for subnet in aws_subnet.rds_private : subnet.availability_zone]
   allowed_security_groups   = var.allowed_security_groups
-  allowed_cidr_blocks       = var.allowed_cidr_blocks
+  allowed_cidr_blocks       = [aws_vpc.main.cidr_block]
   postgres_version          = var.postgres_version
   db_instance_class         = var.db_instance_class
   db_allocated_storage      = var.db_allocated_storage

@@ -37,3 +37,34 @@ output "app_secrets_name" {
   description = "The name of the application secrets in Secrets Manager"
   value       = aws_secretsmanager_secret.app_secrets.name
 }
+
+# VPC outputs
+output "vpc_id" {
+  description = "The ID of the VPC"
+  value       = aws_vpc.main.id
+}
+
+output "vpc_cidr_block" {
+  description = "The CIDR block of the VPC"
+  value       = aws_vpc.main.cidr_block
+}
+
+output "rds_private_subnet_ids" {
+  description = "The IDs of the RDS private subnets"
+  value       = aws_subnet.rds_private[*].id
+}
+
+output "rds_private_subnet_cidrs" {
+  description = "The CIDR blocks of the RDS private subnets"
+  value       = aws_subnet.rds_private[*].cidr_block
+}
+
+output "availability_zones" {
+  description = "The availability zones used by the subnets"
+  value       = aws_subnet.rds_private[*].availability_zone
+}
+
+output "database_security_group_id" {
+  description = "The security group ID for the RDS database (for App Runner VPC connector)"
+  value       = module.database.security_group_id
+}

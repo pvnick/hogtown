@@ -37,8 +37,8 @@ module "staging_apprunner" {
   app_name                    = "${var.project_name}-staging"
   project_name               = var.project_name
   environment                = "staging"
-  vpc_id                     = var.vpc_id
-  enable_vpc_connector       = var.enable_vpc_connector
+  vpc_id                     = data.terraform_remote_state.shared.outputs.vpc_id
+  enable_vpc_connector       = true
   database_security_groups   = [data.terraform_remote_state.shared.outputs.database_security_group_id]
   github_repository_url      = var.github_repository_url
   github_branch              = var.staging_branch

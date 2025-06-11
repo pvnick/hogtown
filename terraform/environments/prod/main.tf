@@ -37,8 +37,8 @@ module "prod_apprunner" {
   app_name                    = "${var.project_name}-prod"
   project_name               = var.project_name
   environment                = "prod"
-  vpc_id                     = var.vpc_id
-  enable_vpc_connector       = var.enable_vpc_connector
+  vpc_id                     = data.terraform_remote_state.shared.outputs.vpc_id
+  enable_vpc_connector       = true
   database_security_groups   = [data.terraform_remote_state.shared.outputs.database_security_group_id]
   github_repository_url      = var.github_repository_url
   github_branch              = var.prod_branch

@@ -13,8 +13,7 @@ github_repository_url = "https://github.com/your-username/your-repo-name"
 # aws_region = "us-east-1"
 # shared_state_key = "hogtown/shared.tfstate"  # Usually matches default
 # shared_state_region = "us-east-1"  # Usually matches aws_region
-# vpc_id = ""  # Leave empty for default VPC
-# enable_vpc_connector = true
+# VPC connector is automatically enabled to connect to shared VPC/RDS
 # staging_branch = "develop"
 # auto_deploy_enabled = true
 # staging_cpu = "0.25 vCPU"

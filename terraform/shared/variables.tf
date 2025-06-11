@@ -10,10 +10,10 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "vpc_id" {
-  description = "VPC ID to deploy RDS in (leave empty for default VPC)"
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
   type        = string
-  default     = ""
+  default     = "10.0.0.0/16"
 }
 
 variable "availability_zones" {
