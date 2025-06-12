@@ -115,12 +115,6 @@ variable "prosopo_secret_key" {
   sensitive   = true
 }
 
-variable "sendinblue_api_key" {
-  description = "Sendinblue API key for email"
-  type        = string
-  default     = ""
-  sensitive   = true
-}
 
 variable "default_from_email" {
   description = "Default from email address"

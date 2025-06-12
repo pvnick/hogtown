@@ -205,7 +205,7 @@ resource "aws_apprunner_service" "main" {
           runtime_environment_variables = merge({
             DJANGO_SETTINGS_MODULE = "hogtown_project.settings"
             DEBUG                  = "False"
-            AWS_REGION            = data.aws_region.current.name
+            EMAIL_BACKEND         = "anymail.backends.amazon_ses.EmailBackend"
           }, var.additional_env_vars)
           
           runtime_environment_secrets = merge(
@@ -215,17 +215,19 @@ resource "aws_apprunner_service" "main" {
             } : {},
             # Application secrets from central secret store
             var.app_secrets_arn != "" ? {
-              SECRET_KEY          = "${var.app_secrets_arn}:SECRET_KEY"
-              PROSOPO_SITE_KEY   = "${var.app_secrets_arn}:PROSOPO_SITE_KEY"
-              PROSOPO_SECRET_KEY = "${var.app_secrets_arn}:PROSOPO_SECRET_KEY"
-              SENDINBLUE_API_KEY = "${var.app_secrets_arn}:SENDINBLUE_API_KEY"
-              DEFAULT_FROM_EMAIL = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL"
-              ALLOWED_HOSTS      = "${var.app_secrets_arn}:ALLOWED_HOSTS"
-              DB_HOST            = "${var.app_secrets_arn}:DB_HOST"
-              DB_PORT            = "${var.app_secrets_arn}:DB_PORT"
-              DB_NAME            = "${var.app_secrets_arn}:DB_NAME"
-              DB_USERNAME        = "${var.app_secrets_arn}:DB_USERNAME"
-              DB_PASSWORD        = "${var.app_secrets_arn}:DB_PASSWORD"
+              SECRET_KEY            = "${var.app_secrets_arn}:SECRET_KEY"
+              PROSOPO_SITE_KEY     = "${var.app_secrets_arn}:PROSOPO_SITE_KEY"
+              PROSOPO_SECRET_KEY   = "${var.app_secrets_arn}:PROSOPO_SECRET_KEY"
+              AWS_ACCESS_KEY_ID    = "${var.app_secrets_arn}:AWS_ACCESS_KEY_ID"
+              AWS_SECRET_ACCESS_KEY = "${var.app_secrets_arn}:AWS_SECRET_ACCESS_KEY"
+              AWS_REGION           = "${var.app_secrets_arn}:AWS_REGION"
+              DEFAULT_FROM_EMAIL   = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL"
+              ALLOWED_HOSTS        = "${var.app_secrets_arn}:ALLOWED_HOSTS"
+              DB_HOST              = "${var.app_secrets_arn}:DB_HOST"
+              DB_PORT              = "${var.app_secrets_arn}:DB_PORT"
+              DB_NAME              = "${var.app_secrets_arn}:DB_NAME"
+              DB_USERNAME          = "${var.app_secrets_arn}:DB_USERNAME"
+              DB_PASSWORD          = "${var.app_secrets_arn}:DB_PASSWORD"
             } : {}
           )
         }

@@ -98,6 +98,66 @@ resource "random_password" "django_secret_key" {
   special = true
 }
 
+# AWS SES Email Infrastructure
+# Creates dedicated IAM user with minimal permissions for email sending
+# Automatically generates and rotates access keys stored in Secrets Manager
+
+# IAM user for SES email sending (principle of least privilege)
+resource "aws_iam_user" "ses_user" {
+  name = "${var.project_name}-ses-user"
+  path = "/"
+
+  tags = {
+    Name    = "${var.project_name}-ses-user"
+    Project = var.project_name
+    Purpose = "SES Email Sending"
+  }
+}
+
+# IAM policy with minimal SES permissions (send-only)
+resource "aws_iam_policy" "ses_policy" {
+  name        = "${var.project_name}-ses-policy"
+  description = "Minimal policy for SES email sending - send operations only"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail",
+          "ses:SendBulkTemplatedEmail",
+          "ses:SendTemplatedEmail"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "ses:FromAddress" = var.default_from_email
+          }
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name    = "${var.project_name}-ses-policy"
+    Project = var.project_name
+  }
+}
+
+# Attach SES policy to user
+resource "aws_iam_user_policy_attachment" "ses_user_policy" {
+  user       = aws_iam_user.ses_user.name
+  policy_arn = aws_iam_policy.ses_policy.arn
+}
+
+# Auto-generate access keys for SES user
+# Keys are automatically stored in AWS Secrets Manager for secure access
+resource "aws_iam_access_key" "ses_user_key" {
+  user = aws_iam_user.ses_user.name
+}
+
 # Application secrets values
 resource "aws_secretsmanager_secret_version" "app_secrets" {
   secret_id = aws_secretsmanager_secret.app_secrets.id
@@ -106,9 +166,13 @@ resource "aws_secretsmanager_secret_version" "app_secrets" {
     SECRET_KEY           = random_password.django_secret_key.result
     PROSOPO_SITE_KEY    = var.prosopo_site_key
     PROSOPO_SECRET_KEY  = var.prosopo_secret_key
-    SENDINBLUE_API_KEY  = var.sendinblue_api_key
-    DEFAULT_FROM_EMAIL  = var.default_from_email
-    ALLOWED_HOSTS       = var.allowed_hosts
+    
+    # AWS SES credentials (auto-generated)
+    AWS_ACCESS_KEY_ID     = aws_iam_access_key.ses_user_key.id
+    AWS_SECRET_ACCESS_KEY = aws_iam_access_key.ses_user_key.secret
+    AWS_REGION           = var.aws_region
+    DEFAULT_FROM_EMAIL   = var.default_from_email
+    ALLOWED_HOSTS        = var.allowed_hosts
     
     # Database connection details
     DB_HOST     = module.database.database_endpoint

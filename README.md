@@ -13,10 +13,11 @@ A Django web application for managing Catholic parishes, ministries, and events 
 ## Technology Stack
 
 - **Backend**: Django 5.2.2
-- **Database**: SQLite (development), configurable for production
-- **Email**: Brevo (Sendinblue) integration via django-anymail
+- **Database**: SQLite (development), PostgreSQL (production)
+- **Email**: AWS SES integration via django-anymail (migrated from Brevo)
 - **CAPTCHA**: Prosopo Procaptcha for bot protection
 - **Authentication**: Custom approval-based authentication system
+- **Infrastructure**: AWS App Runner, RDS, SES, Secrets Manager
 
 ## Development Setup
 
@@ -121,7 +122,10 @@ PROSOPO_SECRET_KEY=your-prosopo-secret-key
 
 # Email
 EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
-SENDINBLUE_API_KEY=your-brevo-api-key  # For production
+# For AWS SES testing (production uses auto-generated credentials)
+# AWS_ACCESS_KEY_ID=your-aws-access-key-id
+# AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+# AWS_REGION=us-east-1
 ```
 
 ### Production Deployment
@@ -129,11 +133,11 @@ SENDINBLUE_API_KEY=your-brevo-api-key  # For production
 For production deployment:
 
 1. Set `DEBUG=False`
-2. Configure a production database
-3. Set up Brevo email service
+2. Configure PostgreSQL database (automated via Terraform)
+3. Set up AWS SES domain verification and sender identity
 4. Configure real Prosopo CAPTCHA keys
 5. Set up proper static file serving
-6. Use environment variables for sensitive settings
+6. Use AWS Secrets Manager for sensitive settings (automated via Terraform)
 
 ## Project Structure
 
@@ -212,7 +216,8 @@ terraform/
 - AWS CLI configured with appropriate permissions
 - **AWS CLI profile configured** (recommended to use a named profile like `hogtown`)
 - **S3 buckets and DynamoDB tables for remote state** (create these first with unique names)
-- **Third-party service API keys** (Prosopo CAPTCHA, Brevo email) configured in tfvars files
+- **AWS SES domain verification** for your email domain
+- **Third-party service API keys** (Prosopo CAPTCHA) configured in tfvars files
 - GitHub repository URL for App Runner source connection
 
 ### Backend Setup
@@ -351,7 +356,8 @@ aws dynamodb create-table \
 
 ### Key Features
 
-- **Security**: Private database access via VPC connectors, Secrets Manager for credentials
+- **Security**: Private database access via VPC connectors, auto-generated SES credentials, Secrets Manager for all sensitive data
+- **Email**: Automated AWS SES setup with minimal IAM permissions and credential rotation support
 - **Isolation**: Separate Terraform state files per environment for safety
 - **Monitoring**: CloudWatch logs with configurable retention, Performance Insights
 - **Scalability**: Environment-specific resource allocation and health check configuration

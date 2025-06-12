@@ -69,3 +69,25 @@ output "github_repository_url" {
   value       = var.github_repository_url
 }
 
+# AWS SES Infrastructure Outputs
+output "ses_user_name" {
+  description = "The name of the auto-generated SES IAM user"
+  value       = aws_iam_user.ses_user.name
+}
+
+output "ses_user_arn" {
+  description = "The ARN of the auto-generated SES IAM user"
+  value       = aws_iam_user.ses_user.arn
+}
+
+output "ses_policy_arn" {
+  description = "The ARN of the SES IAM policy"
+  value       = aws_iam_policy.ses_policy.arn
+}
+
+output "ses_access_key_id" {
+  description = "The auto-generated access key ID for SES (sensitive)"
+  value       = aws_iam_access_key.ses_user_key.id
+  sensitive   = true
+}
+

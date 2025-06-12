@@ -179,9 +179,14 @@ EMAIL_BACKEND = os.getenv(
 )
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@hogtowncatholic.org")
 
-# Brevo (Sendinblue) email settings
-SENDINBLUE_API_KEY = os.getenv("SENDINBLUE_API_KEY")
-if SENDINBLUE_API_KEY and EMAIL_BACKEND == "anymail.backends.sendinblue.EmailBackend":
+# AWS SES email settings
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+
+if AWS_ACCESS_KEY_ID and EMAIL_BACKEND == "anymail.backends.amazon_ses.EmailBackend":
     ANYMAIL = {
-        "SENDINBLUE_API_KEY": SENDINBLUE_API_KEY,
+        "AMAZON_SES_ACCESS_KEY_ID": AWS_ACCESS_KEY_ID,
+        "AMAZON_SES_SECRET_ACCESS_KEY": AWS_SECRET_ACCESS_KEY,
+        "AMAZON_SES_REGION": AWS_REGION,
     }
