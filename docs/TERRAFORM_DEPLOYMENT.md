@@ -74,6 +74,38 @@ terraform/
      - IAM role creation
      - VPC connector management
 
+### Application Secrets Configuration
+
+**Important**: Configure your application secrets in the tfvars files before deploying the shared infrastructure. The secrets will be securely stored in AWS Secrets Manager during deployment.
+
+#### When to Configure Secrets
+
+Configure secrets in your `config/shared.tfvars` file **before** running `terraform apply` on the shared infrastructure. This ensures your application has the necessary API keys and configuration when it starts.
+
+#### Required Third-Party Service Keys
+
+Update the following variables in `config/shared.tfvars`:
+
+```hcl
+# Application secrets - obtain from service providers
+prosopo_site_key = "your-prosopo-site-key"
+prosopo_secret_key = "your-prosopo-secret-key"
+sendinblue_api_key = "your-brevo-api-key"
+default_from_email = "noreply@yourdomain.com"
+allowed_hosts = "yourdomain.com,www.yourdomain.com"
+```
+
+**How to obtain service keys:**
+
+- **Prosopo CAPTCHA**: Sign up at [prosopo.io](https://prosopo.io/), create a site, and copy the keys
+- **Brevo (Sendinblue)**: Sign up at [brevo.com](https://www.brevo.com/), go to SMTP & API → API Keys
+
+**Notes:**
+- Leave values blank (`""`) if not using a service immediately
+- Secrets are automatically stored securely in AWS Secrets Manager
+- Database credentials and Django SECRET_KEY are auto-generated
+- You can update secrets later by modifying tfvars and running `terraform apply` again
+
 ### Backend Infrastructure Setup
 
 You have two options for setting up the required S3 buckets and DynamoDB tables:

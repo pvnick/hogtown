@@ -212,6 +212,7 @@ terraform/
 - AWS CLI configured with appropriate permissions
 - **AWS CLI profile configured** (recommended to use a named profile like `hogtown`)
 - **S3 buckets and DynamoDB tables for remote state** (create these first with unique names)
+- **Third-party service API keys** (Prosopo CAPTCHA, Brevo email) configured in tfvars files
 - GitHub repository URL for App Runner source connection
 
 ### Backend Setup
