@@ -34,6 +34,7 @@ terraform/
     ├── shared.tfbackend.example     # Shared backend config template
     ├── staging.tfbackend.example    # Staging backend config template
     ├── prod.tfbackend.example       # Production backend config template
+    ├── shared.tfvars.example        # Shared variables template
     ├── staging.tfvars.example       # Staging variables template
     └── prod.tfvars.example          # Production variables template
 ```
@@ -63,13 +64,15 @@ terraform/
 ### Prerequisites
 
 1. **AWS CLI Configuration**:
-   Ensure AWS CLI is configured with appropriate permissions for:
-   - S3 bucket creation and management
-   - DynamoDB table creation
-   - RDS instance management
-   - App Runner service management
-   - IAM role creation
-   - VPC connector management
+   - AWS CLI installed and configured with a named profile (recommended)
+   - Example: `aws configure --profile hogtown`
+   - Ensure the profile has appropriate permissions for:
+     - S3 bucket creation and management
+     - DynamoDB table creation
+     - RDS instance management
+     - App Runner service management
+     - IAM role creation
+     - VPC connector management
 
 ### Backend Infrastructure Setup
 
@@ -129,6 +132,7 @@ Use the provided bootstrap script to automatically create all required AWS resou
 - `config/shared.tfbackend` - Backend config for shared infrastructure
 - `config/staging.tfbackend` - Backend config for staging environment  
 - `config/prod.tfbackend` - Backend config for production environment
+- `config/shared.tfvars` - Variables for shared infrastructure deployment
 - `config/staging.tfvars` - Variables for staging deployment
 - `config/prod.tfvars` - Variables for production deployment
 
@@ -198,11 +202,13 @@ If you need to create your own infrastructure manually:
    # Edit each .tfbackend file with your unique bucket names
 
    # Copy variable files
+   cp shared.tfvars.example shared.tfvars
    cp staging.tfvars.example staging.tfvars
    cp prod.tfvars.example prod.tfvars
    # Edit each .tfvars file with:
+   # - aws_profile: Your AWS CLI profile name (e.g., "hogtown")
    # - shared_state_bucket: Your unique shared state bucket name  
-   # - github_repository_url: Your GitHub repository URL
+   # - github_repository_url: Your GitHub repository URL (staging/prod only)
    # - Other optional settings as needed
    ```
 
@@ -217,8 +223,8 @@ Once you have the S3 buckets, DynamoDB tables, and configuration files set up (e
 ```bash
 cd terraform/shared
 terraform init -backend-config-file=../../config/shared.tfbackend
-terraform plan
-terraform apply
+terraform plan -var-file=../../config/shared.tfvars
+terraform apply -var-file=../../config/shared.tfvars
 ```
 
 **Creates:**

@@ -12,7 +12,8 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
+  profile = var.aws_profile != "" ? var.aws_profile : null
 }
 
 # Get available availability zones
@@ -110,11 +111,9 @@ resource "aws_secretsmanager_secret_version" "app_secrets" {
     ALLOWED_HOSTS       = var.allowed_hosts
     
     # Database connection details
-    DB_HOST     = module.database.db_instance_endpoint
-    DB_PORT     = tostring(module.database.db_instance_port)
-    DB_NAME     = module.database.db_instance_name
-    DB_USERNAME = module.database.db_instance_username
-    DB_PASSWORD = module.database.db_instance_password
+    DB_HOST     = module.database.database_endpoint
+    DB_PORT     = tostring(module.database.database_port)
+    DB_NAME     = module.database.database_name
   })
 
   lifecycle {

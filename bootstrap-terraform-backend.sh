@@ -206,18 +206,19 @@ print_success "Backend configuration files generated"
 print_status "Generating variable files..."
 
 # Generate variable files by copying examples and replacing placeholders
-for env in staging prod; do
+for env in shared staging prod; do
     print_status "Generating ${env}.tfvars from example..."
     cp "config/${env}.tfvars.example" "config/${env}.tfvars"
     
     # Replace placeholders in the copied file
     sed -i "s/YOUR_UNIQUE_PREFIX/${PREFIX}/g" "config/${env}.tfvars"
     sed -i "s/us-east-1/${REGION}/g" "config/${env}.tfvars"
+    sed -i "s/your-aws-profile-name/${AWS_PROFILE}/g" "config/${env}.tfvars"
     
-    # Update GitHub URL if provided
-    if [[ -n "$GITHUB_URL" ]]; then
+    # Update GitHub URL if provided (shared environment only)
+    if [[ -n "$GITHUB_URL" && "$env" == "shared" ]]; then
         sed -i "s|https://github.com/your-username/your-repo-name|${GITHUB_URL}|g" "config/${env}.tfvars"
-        sed -i "s/# Your GitHub repository URL/# Your GitHub repository URL (provided via --github-url)/g" "config/${env}.tfvars"
+        sed -i "s/# GitHub repository URL for App Runner source connection/# GitHub repository URL for App Runner source connection (provided via --github-url)/g" "config/${env}.tfvars"
     fi
     
     # Add generation comment
@@ -245,23 +246,23 @@ echo "📄 Generated Configuration Files:"
 echo "   - config/shared.tfbackend"
 echo "   - config/staging.tfbackend"
 echo "   - config/prod.tfbackend"
+echo "   - config/shared.tfvars"
 echo "   - config/staging.tfvars"
 echo "   - config/prod.tfvars"
 echo ""
 
 if [[ -z "$GITHUB_URL" ]]; then
     print_warning "⚠️  Don't forget to update the GitHub repository URL in:"
-    echo "   - config/staging.tfvars"
-    echo "   - config/prod.tfvars"
+    echo "   - config/shared.tfvars"
     echo ""
 fi
 
 echo "🚀 Next Steps:"
-echo "   1. Update GitHub repository URLs in tfvars files (if not provided)"
+echo "   1. Update GitHub repository URL in config/shared.tfvars (if not provided)"
 echo "   2. Deploy shared infrastructure:"
 echo "      cd terraform/shared"
 echo "      terraform init -backend-config-file=../../config/shared.tfbackend"
-echo "      terraform apply"
+echo "      terraform apply -var-file=../../config/shared.tfvars"
 echo ""
 echo "   3. Deploy staging environment:"
 echo "      cd terraform/environments/staging"

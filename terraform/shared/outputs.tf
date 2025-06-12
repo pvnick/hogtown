@@ -64,7 +64,8 @@ output "availability_zones" {
   value       = aws_subnet.rds_private[*].availability_zone
 }
 
-output "database_security_group_id" {
-  description = "The security group ID for the RDS database (for App Runner VPC connector)"
-  value       = module.database.security_group_id
+output "github_repository_url" {
+  description = "The GitHub repository URL for App Runner"
+  value       = var.github_repository_url
 }
+

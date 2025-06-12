@@ -1,11 +1,11 @@
 # Copy this file to terraform.tfvars and fill in your values
 # Required variables:
 
+# AWS Configuration
+aws_profile = "your-aws-profile-name"
+
 # Backend configuration - must match your S3 bucket for shared state
 shared_state_bucket = "YOUR_UNIQUE_PREFIX-terraform-state-shared"
-
-# Your GitHub repository URL
-github_repository_url = "https://github.com/your-username/your-repo-name"
 
 # Optional variables (uncomment and modify as needed):
 

@@ -210,6 +210,7 @@ terraform/
 ### Prerequisites
 
 - AWS CLI configured with appropriate permissions
+- **AWS CLI profile configured** (recommended to use a named profile like `hogtown`)
 - **S3 buckets and DynamoDB tables for remote state** (create these first with unique names)
 - GitHub repository URL for App Runner source connection
 
@@ -272,7 +273,7 @@ If you prefer to set up the infrastructure manually:
 export BUCKET_PREFIX="YOUR_UNIQUE_PREFIX"
 export AWS_REGION="us-east-1"
 
-# Create S3 buckets for Terraform state
+# Create S3 buckets for Terraform state (replace YOUR_PROFILE with your AWS profile name)
 aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-shared --region ${AWS_REGION} --profile YOUR_PROFILE
 aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-staging --region ${AWS_REGION} --profile YOUR_PROFILE
 aws s3 mb s3://${BUCKET_PREFIX}-terraform-state-prod --region ${AWS_REGION} --profile YOUR_PROFILE
@@ -318,9 +319,10 @@ aws dynamodb create-table \
    cp shared.tfbackend.example shared.tfbackend
    cp staging.tfbackend.example staging.tfbackend
    cp prod.tfbackend.example prod.tfbackend
+   cp shared.tfvars.example shared.tfvars
    cp staging.tfvars.example staging.tfvars
    cp prod.tfvars.example prod.tfvars
-   # Edit all files with your unique bucket names and GitHub repository URL
+   # Edit all files with your unique bucket names, AWS profile, and GitHub repository URL
    ```
 
 ### Quick Deployment
@@ -329,7 +331,7 @@ aws dynamodb create-table \
    ```bash
    cd terraform/shared
    terraform init -backend-config-file=../../config/shared.tfbackend
-   terraform apply
+   terraform apply -var-file=../../config/shared.tfvars
    ```
 
 2. **Deploy staging environment**:

@@ -10,6 +10,12 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "aws_profile" {
+  description = "AWS profile to use"
+  type        = string
+  default     = ""
+}
+
 # Backend configuration variables for shared state access
 variable "shared_state_bucket" {
   description = "S3 bucket name containing shared Terraform state"
@@ -28,15 +34,8 @@ variable "shared_state_region" {
   default     = "us-east-1"
 }
 
-variable "github_repository_url" {
-  description = "GitHub repository URL (e.g., https://github.com/username/repo)"
-  type        = string
-  
-  validation {
-    condition     = can(regex("^https://github\\.com/[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+/?$", var.github_repository_url))
-    error_message = "The github_repository_url must be a valid GitHub repository URL in the format: https://github.com/username/repository"
-  }
-}
+# GitHub repository URL comes from shared infrastructure
+# Branch configuration for this environment
 
 variable "staging_branch" {
   description = "GitHub branch for staging deployment"

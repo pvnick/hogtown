@@ -8,7 +8,8 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
+  profile = var.aws_profile != "" ? var.aws_profile : null
 }
 
 # Get shared infrastructure information
@@ -40,7 +41,7 @@ module "staging_apprunner" {
   vpc_id                     = data.terraform_remote_state.shared.outputs.vpc_id
   enable_vpc_connector       = true
   database_security_groups   = [data.terraform_remote_state.shared.outputs.database_security_group_id]
-  github_repository_url      = var.github_repository_url
+  github_repository_url      = data.terraform_remote_state.shared.outputs.github_repository_url
   github_branch              = var.staging_branch
   github_connection_arn      = data.terraform_remote_state.shared.outputs.github_connection_arn
   auto_deploy_enabled        = var.auto_deploy_enabled

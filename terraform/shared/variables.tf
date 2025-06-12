@@ -10,6 +10,12 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "aws_profile" {
+  description = "AWS profile to use"
+  type        = string
+  default     = ""
+}
+
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   type        = string
@@ -124,6 +130,13 @@ variable "default_from_email" {
 
 variable "allowed_hosts" {
   description = "Comma-separated list of allowed hosts for Django"
+  type        = string
+  default     = ""
+}
+
+# GitHub repository configuration
+variable "github_repository_url" {
+  description = "GitHub repository URL for App Runner source connection"
   type        = string
   default     = ""
 }
