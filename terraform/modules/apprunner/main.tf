@@ -128,13 +128,12 @@ locals {
 
 # Policy for accessing Secrets Manager
 resource "aws_iam_policy" "secrets_access" {
-  count       = length(local.all_secret_arns) > 0 ? 1 : 0
   name        = "${var.app_name}-secrets-access"
   description = "Allow App Runner to access required secrets"
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
+    Statement = length(local.all_secret_arns) > 0 ? [
       {
         Effect = "Allow"
         Action = [
@@ -143,7 +142,7 @@ resource "aws_iam_policy" "secrets_access" {
         ]
         Resource = local.all_secret_arns
       }
-    ]
+    ] : []
   })
 
   tags = {
@@ -154,9 +153,8 @@ resource "aws_iam_policy" "secrets_access" {
 }
 
 resource "aws_iam_role_policy_attachment" "secrets_access" {
-  count      = length(local.all_secret_arns) > 0 ? 1 : 0
   role       = aws_iam_role.apprunner_service_role.name
-  policy_arn = aws_iam_policy.secrets_access[0].arn
+  policy_arn = aws_iam_policy.secrets_access.arn
 }
 
 # IAM role for App Runner build (accessing ECR, etc.)
