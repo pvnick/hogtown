@@ -66,7 +66,7 @@ output "availability_zones" {
 
 output "github_repository_url" {
   description = "The GitHub repository URL for App Runner"
-  value       = var.github_repository_url
+  value       = local.config.github_repository_url
 }
 
 # AWS SES Infrastructure Outputs

@@ -1,0 +1,26 @@
+# Copy this file to staging.yaml and fill in your values
+
+# Basic configuration
+project_name: "hogtown"
+aws_profile: "your-aws-profile-name"
+aws_region: "us-east-1"
+
+# Backend configuration - must match your S3 bucket for shared state
+shared_state_bucket: "YOUR_UNIQUE_PREFIX-terraform-state-shared"
+shared_state_key: "hogtown/shared.tfstate"
+shared_state_region: "us-east-1"
+
+# Environment-specific configuration
+staging_branch: "develop"
+auto_deploy_enabled: true
+staging_cpu: "0.25 vCPU"
+staging_memory: "0.5 GB"
+observability_enabled: false
+log_retention_days: 7
+
+# Health check configuration
+health_check_path: "/"
+health_check_healthy_threshold: 1
+health_check_unhealthy_threshold: 3
+health_check_interval: 10
+health_check_timeout: 5

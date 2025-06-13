@@ -1,0 +1,35 @@
+# Example configuration for shared infrastructure
+# Copy this file to shared.yaml and fill in your values
+# Used with Terraform YAML configuration
+
+# Basic configuration
+project_name: "hogtown"
+aws_profile: "your-aws-profile-name"
+aws_region: "us-east-1"
+
+# GitHub repository URL for App Runner source connection
+github_repository_url: "https://github.com/your-username/your-repo-name"
+
+# VPC Configuration (optional - uncomment and modify as needed)
+# vpc_cidr: "10.0.0.0/16"
+# availability_zones: []
+# allowed_security_groups: []
+# allowed_cidr_blocks: []
+
+# Database configuration (optional - uncomment and modify as needed)
+# postgres_version: "17.2"
+# db_instance_class: "db.t4g.micro"
+# db_allocated_storage: 20
+# db_max_allocated_storage: 1000
+# multi_az: false
+# backup_retention_period: 7
+# monitoring_interval: 0
+# performance_insights_enabled: false
+# deletion_protection: true
+# skip_final_snapshot: false
+
+# Application secrets (required - obtain from service providers)
+prosopo_site_key: "your-prosopo-site-key"
+prosopo_secret_key: "your-prosopo-secret-key"
+default_from_email: "noreply@yourdomain.com"
+allowed_hosts: "yourdomain.com,www.yourdomain.com"

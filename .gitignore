@@ -79,3 +79,6 @@ secrets.json
 *.key
 .env.local
 .env.production
+
+# Configuration files (contain sensitive data)
+config/*.yaml

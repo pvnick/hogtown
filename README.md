@@ -189,11 +189,11 @@ terraform/
 ├── environments/
 │   ├── prod/                 # Production App Runner service
 │   │   ├── main.tf           # Production configuration
-│   │   ├── variables.tf      # Production variables
+│   │   ├── locals.tf         # Production YAML configuration loader
 │   │   └── outputs.tf        # Production outputs
 │   └── staging/              # Staging App Runner service
 │       ├── main.tf           # Staging configuration
-│       ├── variables.tf      # Staging variables
+│       ├── locals.tf         # Staging YAML configuration loader
 │       └── outputs.tf        # Staging outputs
 ├── modules/                  # Reusable Terraform modules
 │   ├── apprunner/           # App Runner with VPC connector
@@ -201,14 +201,15 @@ terraform/
 │   └── database-setup/      # Environment database creation
 ├── shared/                  # Shared infrastructure
 │   ├── main.tf              # Shared RDS and GitHub connection
-│   ├── variables.tf         # Shared variables
+│   ├── locals.tf            # Shared YAML configuration loader
 │   └── outputs.tf           # Shared outputs
 └── config/                  # Configuration templates
     ├── shared.tfbackend.example     # Shared backend config template
     ├── staging.tfbackend.example    # Staging backend config template
     ├── prod.tfbackend.example       # Production backend config template
-    ├── staging.tfvars.example       # Staging variables template
-    └── prod.tfvars.example          # Production variables template
+    ├── shared.yaml.example          # Shared configuration template
+    ├── staging.yaml.example         # Staging configuration template
+    └── prod.yaml.example            # Production configuration template
 ```
 
 ### Prerequisites
@@ -217,7 +218,7 @@ terraform/
 - **AWS CLI profile configured** (recommended to use a named profile like `hogtown`)
 - **S3 buckets and DynamoDB tables for remote state** (create these first with unique names)
 - **AWS SES domain verification** for your email domain
-- **Third-party service API keys** (Prosopo CAPTCHA) configured in tfvars files
+- **Third-party service API keys** (Prosopo CAPTCHA) configured in YAML files
 - GitHub repository URL for App Runner source connection
 
 ### Backend Setup
@@ -325,10 +326,10 @@ aws dynamodb create-table \
    cp shared.tfbackend.example shared.tfbackend
    cp staging.tfbackend.example staging.tfbackend
    cp prod.tfbackend.example prod.tfbackend
-   cp shared.tfvars.example shared.tfvars
-   cp staging.tfvars.example staging.tfvars
-   cp prod.tfvars.example prod.tfvars
-   # Edit all files with your unique bucket names, AWS profile, and GitHub repository URL
+   cp shared.yaml.example shared.yaml
+   cp staging.yaml.example staging.yaml
+   cp prod.yaml.example prod.yaml
+   # Edit all YAML files with your unique bucket names, AWS profile, and GitHub repository URL
    ```
 
 ### Quick Deployment
@@ -337,21 +338,21 @@ aws dynamodb create-table \
    ```bash
    cd terraform/shared
    terraform init -backend-config-file=../../config/shared.tfbackend
-   terraform apply -var-file=../../config/shared.tfvars
+   terraform apply
    ```
 
 2. **Deploy staging environment**:
    ```bash
    cd terraform/environments/staging
    terraform init -backend-config-file=../../config/staging.tfbackend
-   terraform apply -var-file=../../config/staging.tfvars
+   terraform apply
    ```
 
 3. **Deploy production environment**:
    ```bash
    cd terraform/environments/prod
    terraform init -backend-config-file=../../config/prod.tfbackend
-   terraform apply -var-file=../../config/prod.tfvars
+   terraform apply
    ```
 
 ### Key Features
