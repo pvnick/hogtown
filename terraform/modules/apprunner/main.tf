@@ -195,6 +195,10 @@ resource "aws_apprunner_service" "main" {
   source_configuration {
     auto_deployments_enabled = var.auto_deploy_enabled
     
+    authentication_configuration {
+      connection_arn = var.github_connection_arn
+    }
+    
     code_repository {
       repository_url = var.github_repository_url
       
@@ -202,6 +206,7 @@ resource "aws_apprunner_service" "main" {
         configuration_source = "REPOSITORY"  # Use apprunner.yaml from repo
         
         code_configuration_values {
+          runtime = "PYTHON_3"
           runtime_environment_variables = merge({
             DJANGO_SETTINGS_MODULE = "hogtown_project.settings"
             DEBUG                  = "False"
@@ -238,8 +243,6 @@ resource "aws_apprunner_service" "main" {
         value = var.github_branch
       }
     }
-    
-    connection_arn = var.github_connection_arn
   }
 
   instance_configuration {
