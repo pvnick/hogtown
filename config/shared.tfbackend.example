@@ -7,3 +7,4 @@ key            = "hogtown/shared.tfstate"
 region         = "us-east-1"
 dynamodb_table = "YOUR_UNIQUE_PREFIX-terraform-locks-shared"
 encrypt        = true
+profile        = "default"

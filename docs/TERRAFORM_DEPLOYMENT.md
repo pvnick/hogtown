@@ -240,7 +240,7 @@ If you need to create your own infrastructure manually:
    cp shared.tfbackend.example shared.tfbackend
    cp staging.tfbackend.example staging.tfbackend  
    cp prod.tfbackend.example prod.tfbackend
-   # Edit each .tfbackend file with your unique bucket names
+   # Edit each .tfbackend file with your unique bucket names and AWS profile
 
    # Copy variable files
    cp shared.yaml.example shared.yaml

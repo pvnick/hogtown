@@ -7,3 +7,4 @@ key            = "hogtown/prod.tfstate"
 region         = "us-east-1"
 dynamodb_table = "YOUR_UNIQUE_PREFIX-terraform-locks-prod"
 encrypt        = true
+profile        = "default"
