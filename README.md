@@ -203,13 +203,14 @@ terraform/
 │   ├── main.tf              # Shared RDS and GitHub connection
 │   ├── locals.tf            # Shared YAML configuration loader
 │   └── outputs.tf           # Shared outputs
-└── config/                  # Configuration templates
-    ├── shared.tfbackend.example     # Shared backend config template
-    ├── staging.tfbackend.example    # Staging backend config template
-    ├── prod.tfbackend.example       # Production backend config template
-    ├── shared.yaml.example          # Shared configuration template
-    ├── staging.yaml.example         # Staging configuration template
-    └── prod.yaml.example            # Production configuration template
+├── config/                  # Configuration templates
+│   ├── shared.tfbackend.example     # Shared backend config template
+│   ├── staging.tfbackend.example    # Staging backend config template
+│   ├── prod.tfbackend.example       # Production backend config template
+│   ├── shared.yaml.example          # Shared configuration template
+│   ├── staging.yaml.example         # Staging configuration template
+│   └── prod.yaml.example            # Production configuration template
+└── bootstrap-terraform-backend.sh   # Backend setup automation script
 ```
 
 ### Prerequisites
@@ -232,26 +233,26 @@ Use the provided bootstrap script to automatically create all required AWS resou
 **Basic Usage:**
 ```bash
 # Quick setup with auto-generated unique prefix
-./bootstrap-terraform-backend.sh
+./terraform/bootstrap-terraform-backend.sh
 
 # See all available options and examples
-./bootstrap-terraform-backend.sh --help
+./terraform/bootstrap-terraform-backend.sh --help
 ```
 
 **Advanced Usage Examples:**
 ```bash
 # Custom prefix and region
-./bootstrap-terraform-backend.sh --prefix mycompany-hogtown-456 --region us-west-2
+./terraform/bootstrap-terraform-backend.sh --prefix mycompany-hogtown-456 --region us-west-2
 
 # Complete setup with all options
-./bootstrap-terraform-backend.sh \
+./terraform/bootstrap-terraform-backend.sh \
   --prefix myproject-123 \
   --region us-east-1 \
   --profile production \
   --github-url https://github.com/your-username/your-repo
 
 # Using short form arguments
-./bootstrap-terraform-backend.sh -p myproject-789 -r eu-west-1 -g https://github.com/user/repo
+./terraform/bootstrap-terraform-backend.sh -p myproject-789 -r eu-west-1 -g https://github.com/user/repo
 ```
 
 **Available Arguments:**
@@ -264,7 +265,7 @@ Use the provided bootstrap script to automatically create all required AWS resou
 **What the script does:**
 - ✅ Creates S3 buckets for Terraform state with versioning and encryption
 - ✅ Creates DynamoDB tables for state locking
-- ✅ Generates all configuration files in the `config/` directory
+- ✅ Generates all configuration files in the `terraform/config/` directory
 - ✅ Validates AWS credentials before starting
 - ✅ Provides clear next steps for deployment
 - ✅ Uses unique prefixes to avoid naming conflicts
@@ -320,9 +321,9 @@ aws dynamodb create-table \
   --profile YOUR_PROFILE
 ```
 
-2. **Configure backend and variables**: Copy and edit the configuration files in the `config/` directory:
+2. **Configure backend and variables**: Copy and edit the configuration files in the `terraform/config/` directory:
    ```bash
-   cd config
+   cd terraform/config
    cp shared.tfbackend.example shared.tfbackend
    cp staging.tfbackend.example staging.tfbackend
    cp prod.tfbackend.example prod.tfbackend
@@ -337,7 +338,7 @@ aws dynamodb create-table \
 1. **Deploy shared infrastructure** (RDS, GitHub connection):
    ```bash
    cd terraform/shared
-   terraform init -backend-config-file=../../config/shared.tfbackend
+   terraform init -backend-config-file=../config/shared.tfbackend
    terraform apply
    ```
 

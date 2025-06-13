@@ -10,15 +10,19 @@ terraform {
 provider "aws" {
   region  = local.config.aws_region
   profile = local.config.aws_profile != "" ? local.config.aws_profile : null
+  
+  # Skip EC2 metadata API to avoid credential warnings in non-EC2 environments
+  skip_metadata_api_check = true
 }
 
 # Get shared infrastructure information
 data "terraform_remote_state" "shared" {
   backend = "s3"
   config = {
-    bucket = local.config.shared_state_bucket
-    key    = local.config.shared_state_key
-    region = local.config.shared_state_region
+    bucket  = local.config.shared_state_bucket
+    key     = local.config.shared_state_key
+    region  = local.config.shared_state_region
+    profile = local.config.aws_profile != "" ? local.config.aws_profile : null
   }
 }
 

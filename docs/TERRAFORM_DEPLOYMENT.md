@@ -30,13 +30,14 @@ terraform/
 │   ├── database/             # RDS instance with security
 │   ├── database-setup/       # Environment database creation
 │   └── apprunner/           # App Runner with VPC connector
-└── config/                   # Configuration templates
-    ├── shared.tfbackend.example     # Shared backend config template
-    ├── staging.tfbackend.example    # Staging backend config template
-    ├── prod.tfbackend.example       # Production backend config template
-    ├── shared.yaml.example          # Shared variables template
-    ├── staging.yaml.example         # Staging variables template
-    └── prod.yaml.example            # Production variables template
+├── config/                   # Configuration templates
+│   ├── shared.tfbackend.example     # Shared backend config template
+│   ├── staging.tfbackend.example    # Staging backend config template
+│   ├── prod.tfbackend.example       # Production backend config template
+│   ├── shared.yaml.example          # Shared variables template
+│   ├── staging.yaml.example         # Staging variables template
+│   └── prod.yaml.example            # Production variables template
+└── bootstrap-terraform-backend.sh  # Bootstrap script for backend setup
 ```
 
 ## Key Improvements
@@ -81,11 +82,11 @@ terraform/
 
 #### When to Configure Secrets
 
-Configure secrets in your `config/shared.yaml` file **before** running `terraform apply` on the shared infrastructure. This ensures your application has the necessary API keys and configuration when it starts.
+Configure secrets in your `terraform/config/shared.yaml` file **before** running `terraform apply` on the shared infrastructure. This ensures your application has the necessary API keys and configuration when it starts.
 
 #### Required Third-Party Service Keys
 
-Update the following variables in `config/shared.yaml`:
+Update the following variables in `terraform/config/shared.yaml`:
 
 ```yaml
 # Application secrets - obtain from service providers
@@ -126,29 +127,29 @@ Use the provided bootstrap script to automatically create all required AWS resou
 **Basic Usage:**
 ```bash
 # Quick setup with auto-generated unique prefix
-./bootstrap-terraform-backend.sh
+./terraform/bootstrap-terraform-backend.sh
 
 # Get detailed help and see all examples
-./bootstrap-terraform-backend.sh --help
+./terraform/bootstrap-terraform-backend.sh --help
 ```
 
 **Advanced Usage Examples:**
 ```bash
 # Custom prefix and region
-./bootstrap-terraform-backend.sh --prefix mycompany-hogtown-456 --region us-west-2
+./terraform/bootstrap-terraform-backend.sh --prefix mycompany-hogtown-456 --region us-west-2
 
 # Complete setup with all options specified
-./bootstrap-terraform-backend.sh \
+./terraform/bootstrap-terraform-backend.sh \
   --prefix myproject-123 \
   --region us-east-1 \
   --profile production \
   --github-url https://github.com/your-username/your-repo
 
 # Using short form arguments for quick setup
-./bootstrap-terraform-backend.sh -p myproject-789 -r eu-west-1 -g https://github.com/user/repo
+./terraform/bootstrap-terraform-backend.sh -p myproject-789 -r eu-west-1 -g https://github.com/user/repo
 
 # Use with a specific AWS profile (useful for multiple AWS accounts)
-./bootstrap-terraform-backend.sh --profile staging --prefix staging-env-001
+./terraform/bootstrap-terraform-backend.sh --profile staging --prefix staging-env-001
 ```
 
 **Complete Argument Reference:**
@@ -164,18 +165,18 @@ Use the provided bootstrap script to automatically create all required AWS resou
 - ✅ **Validates AWS credentials** before making any changes
 - ✅ **Creates S3 buckets** with versioning and encryption enabled
 - ✅ **Creates DynamoDB tables** for state locking with proper configuration
-- ✅ **Generates configuration files** from templates in the `config/` directory
+- ✅ **Generates configuration files** from templates in the `terraform/config/` directory
 - ✅ **Updates GitHub URLs** in YAML configuration files (if provided)
 - ✅ **Provides next steps** with exact commands to run
 - ✅ **Uses unique prefixes** to avoid naming conflicts with other users
 
 **Generated Files:**
-- `config/shared.tfbackend` - Backend config for shared infrastructure
-- `config/staging.tfbackend` - Backend config for staging environment  
-- `config/prod.tfbackend` - Backend config for production environment
-- `config/shared.yaml` - Variables for shared infrastructure deployment
-- `config/staging.yaml` - Variables for staging deployment
-- `config/prod.yaml` - Variables for production deployment
+- `terraform/config/shared.tfbackend` - Backend config for shared infrastructure
+- `terraform/config/staging.tfbackend` - Backend config for staging environment  
+- `terraform/config/prod.tfbackend` - Backend config for production environment
+- `terraform/config/shared.yaml` - Variables for shared infrastructure deployment
+- `terraform/config/staging.yaml` - Variables for staging deployment
+- `terraform/config/prod.yaml` - Variables for production deployment
 
 #### Option 2: Manual Setup
 
@@ -236,7 +237,7 @@ If you need to create your own infrastructure manually:
    Copy the example configuration files and customize them with your settings:
    ```bash
    # Copy backend configuration files
-   cd config
+   cd terraform/config
    cp shared.tfbackend.example shared.tfbackend
    cp staging.tfbackend.example staging.tfbackend  
    cp prod.tfbackend.example prod.tfbackend
@@ -263,7 +264,7 @@ Once you have the S3 buckets, DynamoDB tables, and configuration files set up (e
 
 ```bash
 cd terraform/shared
-terraform init -backend-config-file=../../config/shared.tfbackend
+terraform init -backend-config-file=../config/shared.tfbackend
 terraform plan
 terraform apply
 ```
@@ -275,7 +276,7 @@ terraform apply
 
 ### 2. Deploy Environment-Specific Infrastructure
 
-**Important**: The staging and prod environments require access to the shared infrastructure state. Make sure your `config/staging.yaml` and `config/prod.yaml` files contain the correct `shared_state_bucket` value.
+**Important**: The staging and prod environments require access to the shared infrastructure state. Make sure your `terraform/config/staging.yaml` and `terraform/config/prod.yaml` files contain the correct `shared_state_bucket` value.
 
 ```bash
 # Deploy staging environment
@@ -295,7 +296,7 @@ terraform apply
 
 ### Production Settings (Recommended)
 ```yaml
-# config/shared.yaml
+# terraform/config/shared.yaml
 multi_az: true
 monitoring_interval: 60
 performance_insights_enabled: true

@@ -1,6 +1,6 @@
 # Load configuration from YAML file with defaults
 locals {
-  raw_config = yamldecode(file("${path.module}/../../../config/staging.yaml"))
+  raw_config = yamldecode(file("${path.module}/../../config/staging.yaml"))
   
   config = {
     # Basic configuration (required)

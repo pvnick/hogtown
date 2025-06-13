@@ -16,9 +16,10 @@ provider "aws" {
 data "terraform_remote_state" "shared" {
   backend = "s3"
   config = {
-    bucket = local.config.shared_state_bucket
-    key    = local.config.shared_state_key
-    region = local.config.shared_state_region
+    bucket  = local.config.shared_state_bucket
+    key     = local.config.shared_state_key
+    region  = local.config.shared_state_region
+    profile = local.config.aws_profile != "" ? local.config.aws_profile : null
   }
 }
 
