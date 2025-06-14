@@ -12,8 +12,6 @@ locals {
     # VPC Configuration with defaults
     vpc_cidr                = try(local.raw_config.vpc_cidr, "10.0.0.0/16")
     availability_zones      = try(local.raw_config.availability_zones, [])
-    allowed_security_groups = try(local.raw_config.allowed_security_groups, [])
-    allowed_cidr_blocks     = try(local.raw_config.allowed_cidr_blocks, [])
     
     # Database configuration with defaults
     postgres_version             = try(local.raw_config.postgres_version, "17.2")

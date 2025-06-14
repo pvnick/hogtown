@@ -1,0 +1,26 @@
+# Production environment configuration
+
+# Basic configuration
+project_name: "hogtown"
+aws_profile: "hogtown"
+aws_region: "us-east-1"
+
+# Backend configuration - must match your S3 bucket for shared state
+shared_state_bucket: "hogtown-63835-terraform-state-shared"
+shared_state_key: "hogtown/shared.tfstate"
+shared_state_region: "us-east-1"
+
+# Environment-specific configuration
+prod_branch: "main"
+auto_deploy_enabled: false  # Recommended: false for production
+prod_cpu: "0.5 vCPU"
+prod_memory: "1 GB"
+observability_enabled: true
+log_retention_days: 30
+
+# Health check configuration
+health_check_path: "/"
+health_check_healthy_threshold: 2
+health_check_unhealthy_threshold: 5
+health_check_interval: 10
+health_check_timeout: 5

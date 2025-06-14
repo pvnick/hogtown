@@ -13,8 +13,6 @@ github_repository_url: "https://github.com/your-username/your-repo-name"
 # VPC Configuration (optional - uncomment and modify as needed)
 # vpc_cidr: "10.0.0.0/16"
 # availability_zones: []
-# allowed_security_groups: []
-# allowed_cidr_blocks: []
 
 # Database configuration (optional - uncomment and modify as needed)
 # postgres_version: "17.2"

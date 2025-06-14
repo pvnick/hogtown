@@ -4,17 +4,6 @@ resource "aws_security_group" "rds" {
   description = "Security group for RDS PostgreSQL instance"
   vpc_id      = data.aws_vpc.selected.id
 
-  # Allow access from security groups (including Lambda)
-  dynamic "ingress" {
-    for_each = length(local.all_allowed_security_groups) > 0 ? [1] : []
-    content {
-      from_port       = 5432
-      to_port         = 5432
-      protocol        = "tcp"
-      security_groups = local.all_allowed_security_groups
-    }
-  }
-
   # Allow access from CIDR blocks (AppRunner subnets)
   dynamic "ingress" {
     for_each = length(var.allowed_cidr_blocks) > 0 ? [1] : []

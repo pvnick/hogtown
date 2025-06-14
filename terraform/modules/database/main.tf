@@ -37,8 +37,7 @@ data "aws_subnet" "lambda_subnets" {
   id       = each.value
 }
 
-# Use only user-provided security groups (Lambda access handled separately)
+# Get Lambda subnet CIDR blocks for access
 locals {
-  all_allowed_security_groups = var.allowed_security_groups
   lambda_subnet_cidrs = [for subnet in data.aws_subnet.lambda_subnets : subnet.cidr_block]
 }

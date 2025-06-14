@@ -107,16 +107,17 @@ resource "aws_iam_role_policy" "lambda_db_setup" {
           "kms:Decrypt",
           "kms:DescribeKey"
         ]
-        Resource = compact([
+        Resource = [
           # Allow access to custom RDS KMS key if specified
-          var.kms_key_id != "" ? var.kms_key_id : null,
-          # Allow access to default AWS managed RDS KMS key
-          "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:alias/aws/rds",
+          var.kms_key_id != ""
+            ? var.kms_key_id
+            # Otherwise allow access to default AWS managed RDS KMS key
+            : "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:alias/aws/rds",
           # Allow access to AWS managed Lambda KMS key
           "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:alias/aws/lambda",
           # Allow access to Secrets Manager KMS key  
           "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:alias/aws/secretsmanager"
-        ])
+        ]
       }
     ]
   })
