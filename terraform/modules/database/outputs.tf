@@ -28,11 +28,6 @@ output "secrets_manager_arn" {
   value       = aws_secretsmanager_secret.rds_master.arn
 }
 
-output "rds_allowed_security_groups" {
-  description = "Security groups allowed to access RDS (for debugging)"
-  value       = local.all_allowed_security_groups
-}
-
 output "lambda_function_arn" {
   description = "ARN of the database setup Lambda function"
   value = aws_lambda_function.db_setup.arn

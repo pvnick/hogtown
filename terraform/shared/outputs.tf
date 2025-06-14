@@ -116,12 +116,6 @@ output "ses_access_key_id" {
   sensitive   = true
 }
 
-# Debug outputs for RDS security group configuration
-output "rds_allowed_security_groups" {
-  description = "Security groups allowed to access RDS (for debugging)"
-  value       = module.database.rds_allowed_security_groups
-}
-
 # Lambda function outputs for database setup
 output "lambda_function_arn" {
   description = "ARN of the database setup Lambda function"
