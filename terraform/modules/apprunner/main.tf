@@ -185,11 +185,11 @@ resource "aws_apprunner_service" "main" {
         code_configuration_values {
           runtime = "PYTHON_311"
           
-          # Build commands from apprunner.yaml (updated for Python 3.11)
-          build_command = "pip3 install -r requirements.txt && python3 manage.py collectstatic --noinput"
+          # Build commands for Python 3.11 using build script
+          build_command = "sh build.sh"
           
-          # Start command from apprunner.yaml (updated for Python 3.11)
-          start_command = "python3 manage.py migrate --noinput && gunicorn --bind 0.0.0.0:8000 --workers $(nproc) --timeout 60 --keep-alive 2 --max-requests 1000 --max-requests-jitter 100 hogtown_project.wsgi:application"
+          # Start command for Python 3.11
+          start_command = "gunicorn --bind 0.0.0.0:8000 --workers $(nproc) --timeout 60 --keep-alive 2 --max-requests 1000 --max-requests-jitter 100 hogtown_project.wsgi:application"
           
           runtime_environment_variables = merge({
             DJANGO_SETTINGS_MODULE = "hogtown_project.settings"
@@ -199,25 +199,25 @@ resource "aws_apprunner_service" "main" {
           }, var.additional_env_vars)
           
           runtime_environment_secrets = merge(
-            # Legacy database secret for backwards compatibility
+            # Database connection string from database secret
             var.database_secret_arn != "" ? {
-              DATABASE_URL = "${var.database_secret_arn}:database_url"
+              DATABASE_URL = "${var.database_secret_arn}:database_url::"
+              DB_USERNAME  = "${var.database_secret_arn}:username::"
+              DB_PASSWORD  = "${var.database_secret_arn}:password::"
+              DB_HOST      = "${var.database_secret_arn}:endpoint::"
+              DB_PORT      = "${var.database_secret_arn}:port::"
+              DB_NAME      = "${var.database_secret_arn}:dbname::"
             } : {},
             # Application secrets from central secret store
             var.app_secrets_arn != "" ? {
-              SECRET_KEY            = "${var.app_secrets_arn}:SECRET_KEY"
-              PROSOPO_SITE_KEY     = "${var.app_secrets_arn}:PROSOPO_SITE_KEY"
-              PROSOPO_SECRET_KEY   = "${var.app_secrets_arn}:PROSOPO_SECRET_KEY"
-              AWS_ACCESS_KEY_ID    = "${var.app_secrets_arn}:AWS_ACCESS_KEY_ID"
-              AWS_SECRET_ACCESS_KEY = "${var.app_secrets_arn}:AWS_SECRET_ACCESS_KEY"
-              AWS_REGION           = "${var.app_secrets_arn}:AWS_REGION"
-              DEFAULT_FROM_EMAIL   = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL"
-              ALLOWED_HOSTS        = "${var.app_secrets_arn}:ALLOWED_HOSTS"
-              DB_HOST              = "${var.app_secrets_arn}:DB_HOST"
-              DB_PORT              = "${var.app_secrets_arn}:DB_PORT"
-              DB_NAME              = "${var.app_secrets_arn}:DB_NAME"
-              DB_USERNAME          = "${var.app_secrets_arn}:DB_USERNAME"
-              DB_PASSWORD          = "${var.app_secrets_arn}:DB_PASSWORD"
+              SECRET_KEY            = "${var.app_secrets_arn}:SECRET_KEY::"
+              PROSOPO_SITE_KEY     = "${var.app_secrets_arn}:PROSOPO_SITE_KEY::"
+              PROSOPO_SECRET_KEY   = "${var.app_secrets_arn}:PROSOPO_SECRET_KEY::"
+              AWS_ACCESS_KEY_ID    = "${var.app_secrets_arn}:AWS_ACCESS_KEY_ID::"
+              AWS_SECRET_ACCESS_KEY = "${var.app_secrets_arn}:AWS_SECRET_ACCESS_KEY::"
+              AWS_REGION           = "${var.app_secrets_arn}:AWS_REGION::"
+              DEFAULT_FROM_EMAIL   = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL::"
+              ALLOWED_HOSTS        = "${var.app_secrets_arn}:ALLOWED_HOSTS::"
             } : {}
           )
         }
