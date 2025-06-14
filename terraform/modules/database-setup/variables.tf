@@ -13,3 +13,14 @@ variable "environment_databases" {
   type        = list(string)
   default     = []
 }
+
+variable "lambda_function_name" {
+  description = "Name of the Lambda function that handles database setup"
+  type        = string
+}
+
+variable "aws_profile" {
+  description = "AWS profile to use for CLI commands"
+  type        = string
+  default     = ""
+}

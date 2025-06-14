@@ -27,9 +27,11 @@ data "terraform_remote_state" "shared" {
 module "database_setup" {
   source = "../../modules/database-setup"
   
-  project_name           = local.config.project_name
+  project_name            = local.config.project_name
   rds_secrets_manager_arn = data.terraform_remote_state.shared.outputs.secrets_manager_arn
-  environment_databases  = ["${local.config.project_name}_prod"]
+  environment_databases   = ["${local.config.project_name}_prod"]
+  lambda_function_name    = data.terraform_remote_state.shared.outputs.lambda_function_name
+  aws_profile            = local.config.aws_profile
 }
 
 # Production App Runner service
@@ -41,6 +43,7 @@ module "prod_apprunner" {
   environment                = "prod"
   vpc_id                     = data.terraform_remote_state.shared.outputs.vpc_id
   enable_vpc_connector       = true
+  subnet_ids                 = data.terraform_remote_state.shared.outputs.apprunner_private_subnet_ids
   database_security_groups   = [data.terraform_remote_state.shared.outputs.database_security_group_id]
   github_repository_url      = data.terraform_remote_state.shared.outputs.github_repository_url
   github_branch              = local.config.prod_branch

@@ -25,6 +25,11 @@ variable "enable_vpc_connector" {
   default     = true
 }
 
+variable "subnet_ids" {
+  description = "Subnet IDs for the VPC connector"
+  type        = list(string)
+}
+
 variable "database_security_groups" {
   description = "Security groups that App Runner should be able to access (e.g., RDS security group)"
   type        = list(string)

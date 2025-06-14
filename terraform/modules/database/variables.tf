@@ -16,13 +16,13 @@ variable "availability_zones" {
 }
 
 variable "allowed_security_groups" {
-  description = "Security groups allowed to access RDS"
+  description = "Security groups allowed to access RDS (AppRunner services, etc.)"
   type        = list(string)
   default     = []
 }
 
 variable "allowed_cidr_blocks" {
-  description = "CIDR blocks allowed to access RDS (use sparingly)"
+  description = "CIDR blocks allowed to access RDS (AppRunner subnets)"
   type        = list(string)
   default     = []
 }

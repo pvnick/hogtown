@@ -16,29 +16,8 @@ data "aws_vpc" "selected" {
   default = var.vpc_id == "" ? true : false
 }
 
-data "aws_subnets" "private" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.selected.id]
-  }
-  
-  # Prefer private subnets for security
-  filter {
-    name   = "tag:Name"
-    values = ["*private*"]
-  }
-}
-
-# Fall back to all subnets if no private subnets found
-data "aws_subnets" "fallback" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.selected.id]
-  }
-}
-
 locals {
-  subnet_ids = length(data.aws_subnets.private.ids) > 0 ? data.aws_subnets.private.ids : data.aws_subnets.fallback.ids
+  subnet_ids = var.subnet_ids
 }
 
 # Security group for App Runner VPC connector

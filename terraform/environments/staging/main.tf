@@ -30,9 +30,11 @@ data "terraform_remote_state" "shared" {
 module "database_setup" {
   source = "../../modules/database-setup"
   
-  project_name           = local.config.project_name
+  project_name            = local.config.project_name
   rds_secrets_manager_arn = data.terraform_remote_state.shared.outputs.secrets_manager_arn
-  environment_databases  = ["${local.config.project_name}_staging"]
+  environment_databases   = ["${local.config.project_name}_staging"]
+  lambda_function_name    = data.terraform_remote_state.shared.outputs.lambda_function_name
+  aws_profile            = local.config.aws_profile
 }
 
 # Staging App Runner service
@@ -44,6 +46,7 @@ module "staging_apprunner" {
   environment                = "staging"
   vpc_id                     = data.terraform_remote_state.shared.outputs.vpc_id
   enable_vpc_connector       = true
+  subnet_ids                 = data.terraform_remote_state.shared.outputs.apprunner_private_subnet_ids
   database_security_groups   = [data.terraform_remote_state.shared.outputs.database_security_group_id]
   github_repository_url      = data.terraform_remote_state.shared.outputs.github_repository_url
   github_branch              = local.config.staging_branch

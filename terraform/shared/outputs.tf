@@ -8,6 +8,11 @@ output "database_port" {
   value       = module.database.database_port
 }
 
+output "database_identifier" {
+  description = "The RDS instance identifier"
+  value       = module.database.database_identifier
+}
+
 output "database_security_group_id" {
   description = "The RDS security group ID"
   value       = module.database.security_group_id
@@ -59,6 +64,26 @@ output "rds_private_subnet_cidrs" {
   value       = aws_subnet.rds_private[*].cidr_block
 }
 
+output "apprunner_private_subnet_ids" {
+  description = "The IDs of the AppRunner private subnets"
+  value       = aws_subnet.apprunner_private[*].id
+}
+
+output "apprunner_private_subnet_cidrs" {
+  description = "The CIDR blocks of the AppRunner private subnets"
+  value       = aws_subnet.apprunner_private[*].cidr_block
+}
+
+output "lambda_private_subnet_ids" {
+  description = "The IDs of the Lambda private subnets"
+  value       = aws_subnet.lambda_private[*].id
+}
+
+output "lambda_private_subnet_cidrs" {
+  description = "The CIDR blocks of the Lambda private subnets"
+  value       = aws_subnet.lambda_private[*].cidr_block
+}
+
 output "availability_zones" {
   description = "The availability zones used by the subnets"
   value       = aws_subnet.rds_private[*].availability_zone
@@ -89,5 +114,27 @@ output "ses_access_key_id" {
   description = "The auto-generated access key ID for SES (sensitive)"
   value       = aws_iam_access_key.ses_user_key.id
   sensitive   = true
+}
+
+# Debug outputs for RDS security group configuration
+output "rds_allowed_security_groups" {
+  description = "Security groups allowed to access RDS (for debugging)"
+  value       = module.database.rds_allowed_security_groups
+}
+
+# Lambda function outputs for database setup
+output "lambda_function_arn" {
+  description = "ARN of the database setup Lambda function"
+  value       = module.database.lambda_function_arn
+}
+
+output "lambda_function_name" {
+  description = "Name of the database setup Lambda function"
+  value       = module.database.lambda_function_name
+}
+
+output "lambda_security_group_id" {
+  description = "Security group ID of the Lambda database setup function"
+  value       = module.database.lambda_security_group_id
 }
 

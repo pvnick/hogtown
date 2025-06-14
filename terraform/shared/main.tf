@@ -49,6 +49,38 @@ resource "aws_subnet" "rds_private" {
   }
 }
 
+# Private Subnets for AppRunner (3 across different AZs, /22 = 1024 IPs each)
+resource "aws_subnet" "apprunner_private" {
+  count = 3
+
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = cidrsubnet(local.config.vpc_cidr, 6, count.index + 1)
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name    = "${local.config.project_name}-apprunner-private-subnet-${count.index + 1}"
+    Project = local.config.project_name
+    Type    = "Private"
+    Purpose = "AppRunner"
+  }
+}
+
+# Private Subnets for Lambda (3 across different AZs, /24 = 256 IPs each)
+resource "aws_subnet" "lambda_private" {
+  count = 3
+
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = cidrsubnet(local.config.vpc_cidr, 8, count.index + 16)
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+
+  tags = {
+    Name    = "${local.config.project_name}-lambda-private-subnet-${count.index + 1}"
+    Project = local.config.project_name
+    Type    = "Private"
+    Purpose = "Lambda"
+  }
+}
+
 # Shared database infrastructure
 module "database" {
   source = "../modules/database"
@@ -56,8 +88,7 @@ module "database" {
   project_name               = local.config.project_name
   vpc_id                    = aws_vpc.main.id
   availability_zones        = local.config.availability_zones != [] ? local.config.availability_zones : [for subnet in aws_subnet.rds_private : subnet.availability_zone]
-  allowed_security_groups   = local.config.allowed_security_groups
-  allowed_cidr_blocks       = local.config.allowed_cidr_blocks != [] ? local.config.allowed_cidr_blocks : [aws_vpc.main.cidr_block]
+  allowed_cidr_blocks       = concat(aws_subnet.apprunner_private[*].cidr_block, aws_subnet.lambda_private[*].cidr_block)
   postgres_version          = local.config.postgres_version
   db_instance_class         = local.config.db_instance_class
   db_allocated_storage      = local.config.db_allocated_storage
@@ -69,6 +100,78 @@ module "database" {
   deletion_protection       = local.config.deletion_protection
   skip_final_snapshot      = local.config.skip_final_snapshot
 }
+
+# VPC Endpoints for Lambda to access AWS services without internet
+resource "aws_vpc_endpoint" "secretsmanager" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.name}.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.lambda_private[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name    = "${local.config.project_name}-secretsmanager-endpoint"
+    Project = local.config.project_name
+  }
+}
+
+resource "aws_vpc_endpoint" "logs" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.name}.logs"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.lambda_private[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name    = "${local.config.project_name}-logs-endpoint"
+    Project = local.config.project_name
+  }
+}
+
+resource "aws_vpc_endpoint" "kms" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.${data.aws_region.current.name}.kms"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.lambda_private[*].id
+  security_group_ids  = [aws_security_group.vpc_endpoints.id]
+  private_dns_enabled = true
+
+  tags = {
+    Name    = "${local.config.project_name}-kms-endpoint"
+    Project = local.config.project_name
+  }
+}
+
+# Security group for VPC endpoints
+resource "aws_security_group" "vpc_endpoints" {
+  name        = "${local.config.project_name}-vpc-endpoints-sg"
+  description = "Security group for VPC endpoints"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name    = "${local.config.project_name}-vpc-endpoints-sg"
+    Project = local.config.project_name
+  }
+}
+
+# Data source for current region
+data "aws_region" "current" {}
 
 # GitHub connection (shared across environments)
 resource "aws_apprunner_connection" "github" {
