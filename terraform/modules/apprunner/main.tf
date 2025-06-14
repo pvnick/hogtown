@@ -180,14 +180,22 @@ resource "aws_apprunner_service" "main" {
       repository_url = var.github_repository_url
       
       code_configuration {
-        configuration_source = "REPOSITORY"  # Use apprunner.yaml from repo
+        configuration_source = "API"  # Use API configuration for secrets
         
         code_configuration_values {
-          runtime = "PYTHON_3"
+          runtime = "PYTHON_311"
+          
+          # Build commands from apprunner.yaml (updated for Python 3.11)
+          build_command = "pip3 install -r requirements.txt && python3 manage.py collectstatic --noinput"
+          
+          # Start command from apprunner.yaml (updated for Python 3.11)
+          start_command = "python3 manage.py migrate --noinput && gunicorn --bind 0.0.0.0:8000 --workers $(nproc) --timeout 60 --keep-alive 2 --max-requests 1000 --max-requests-jitter 100 hogtown_project.wsgi:application"
+          
           runtime_environment_variables = merge({
             DJANGO_SETTINGS_MODULE = "hogtown_project.settings"
             DEBUG                  = "False"
             EMAIL_BACKEND         = "anymail.backends.amazon_ses.EmailBackend"
+            PORT                   = "8000"
           }, var.additional_env_vars)
           
           runtime_environment_secrets = merge(

@@ -164,6 +164,9 @@ resource "aws_lambda_function" "db_setup" {
     }
   }
 
+  # Explicitly disable KMS encryption for environment variables
+  kms_key_arn = ""
+
   tags = {
     Name    = "${var.project_name}-db-setup"
     Project = var.project_name
