@@ -87,8 +87,9 @@ module "database" {
   
   project_name               = local.config.project_name
   vpc_id                    = aws_vpc.main.id
+  database_subnet_ids       = aws_subnet.rds_private[*].id
   availability_zones        = local.config.availability_zones != [] ? local.config.availability_zones : [for subnet in aws_subnet.rds_private : subnet.availability_zone]
-  allowed_cidr_blocks       = concat(aws_subnet.apprunner_private[*].cidr_block, aws_subnet.lambda_private[*].cidr_block)
+  allowed_cidr_blocks       = aws_subnet.apprunner_private[*].cidr_block
   postgres_version          = local.config.postgres_version
   db_instance_class         = local.config.db_instance_class
   db_allocated_storage      = local.config.db_allocated_storage
@@ -99,6 +100,7 @@ module "database" {
   performance_insights_enabled = local.config.performance_insights_enabled
   deletion_protection       = local.config.deletion_protection
   skip_final_snapshot      = local.config.skip_final_snapshot
+  lambda_subnet_ids        = aws_subnet.lambda_private[*].id
 }
 
 # VPC Endpoints for Lambda to access AWS services without internet

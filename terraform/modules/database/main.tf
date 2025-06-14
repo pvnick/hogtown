@@ -25,24 +25,20 @@ data "aws_vpc" "selected" {
   default = var.vpc_id == "" ? true : false
 }
 
-# Get subnets for RDS
-data "aws_subnets" "database" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.selected.id]
-  }
-  
-  # Only filter by availability zones if specific zones are provided
-  dynamic "filter" {
-    for_each = length(var.availability_zones) > 0 ? [1] : []
-    content {
-      name   = "availability-zone"
-      values = var.availability_zones
-    }
-  }
+# Get CIDR blocks for database subnets
+data "aws_subnet" "database_subnets" {
+  for_each = toset(var.database_subnet_ids)
+  id       = each.value
+}
+
+# Get CIDR blocks for Lambda subnets if provided
+data "aws_subnet" "lambda_subnets" {
+  for_each = toset(var.lambda_subnet_ids)
+  id       = each.value
 }
 
 # Use only user-provided security groups (Lambda access handled separately)
 locals {
   all_allowed_security_groups = var.allowed_security_groups
+  lambda_subnet_cidrs = [for subnet in data.aws_subnet.lambda_subnets : subnet.cidr_block]
 }

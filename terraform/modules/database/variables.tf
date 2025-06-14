@@ -27,6 +27,17 @@ variable "allowed_cidr_blocks" {
   default     = []
 }
 
+variable "lambda_subnet_ids" {
+  description = "Subnet IDs where Lambda functions will be deployed (for CIDR-based access)"
+  type        = list(string)
+  default     = []
+}
+
+variable "database_subnet_ids" {
+  description = "Subnet IDs where RDS database will be deployed"
+  type        = list(string)
+}
+
 variable "postgres_version" {
   description = "PostgreSQL version"
   type        = string

@@ -1,28 +1,3 @@
-# Get subnets for Lambda (prefer private subnets)
-data "aws_subnets" "lambda_private" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.selected.id]
-  }
-  
-  # Filter for private subnets (adjust tag filter as needed)
-  filter {
-    name   = "tag:Type"
-    values = ["private", "Private"]
-  }
-}
-
-# If no private subnets found with tags, get all subnets in VPC
-data "aws_subnets" "lambda_all" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.selected.id]
-  }
-}
-
-locals {
-  lambda_subnet_ids = length(data.aws_subnets.lambda_private.ids) > 0 ? data.aws_subnets.lambda_private.ids : slice(data.aws_subnets.lambda_all.ids, 0, min(length(data.aws_subnets.lambda_all.ids), 2))
-}
 
 # Security group for Lambda to access RDS
 resource "aws_security_group" "lambda_db_setup" {
@@ -30,12 +5,13 @@ resource "aws_security_group" "lambda_db_setup" {
   description = "Security group for Lambda database setup function"
   vpc_id      = data.aws_vpc.selected.id
 
-  # PostgreSQL access to RDS
+  # PostgreSQL access to RDS - restricted to database subnets only
   egress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.rds.id]
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [for subnet in data.aws_subnet.database_subnets : subnet.cidr_block]
+    description = "Allow Lambda to access RDS on port 5432 in database subnets only"
   }
 
   # HTTPS access to VPC endpoints (Secrets Manager, CloudWatch Logs, KMS)
@@ -177,7 +153,7 @@ resource "aws_lambda_function" "db_setup" {
   layers = [aws_lambda_layer_version.psycopg2.arn]
 
   vpc_config {
-    subnet_ids         = local.lambda_subnet_ids
+    subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [aws_security_group.lambda_db_setup.id]
   }
 

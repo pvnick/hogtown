@@ -58,5 +58,5 @@ This is a Django web application project called "hogtown_project" with a core ap
 - Email service uses AWS SES (migrated from Brevo/Sendinblue)
 
 ## Terraform Guidelines
-- Whenever doing anything related to terraform, first check whether the aws terraform mcp server can do it
 - Whenever doing a terraform init make sure to look for the tfbackend files in terraform/config
+- Whenever you write terraform code, use context7

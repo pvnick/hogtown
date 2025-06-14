@@ -26,6 +26,18 @@ resource "aws_security_group" "rds" {
     }
   }
 
+  # Allow access from Lambda subnets
+  dynamic "ingress" {
+    for_each = length(var.lambda_subnet_ids) > 0 ? [1] : []
+    content {
+      from_port   = 5432
+      to_port     = 5432
+      protocol    = "tcp"
+      cidr_blocks = local.lambda_subnet_cidrs
+      description = "Allow Lambda database setup function to access RDS"
+    }
+  }
+
   # RDS doesn't typically need outbound access, but keeping minimal for AWS services
   egress {
     from_port   = 443
@@ -43,7 +55,7 @@ resource "aws_security_group" "rds" {
 # RDS subnet group
 resource "aws_db_subnet_group" "default" {
   name       = "${var.project_name}-subnet-group"
-  subnet_ids = data.aws_subnets.database.ids
+  subnet_ids = var.database_subnet_ids
 
   tags = {
     Name    = "${var.project_name}-subnet-group"
@@ -179,13 +191,3 @@ resource "aws_secretsmanager_secret_version" "rds_master" {
   })
 }
 
-# Security group rule to allow Lambda access to RDS (breaks circular dependency)
-resource "aws_security_group_rule" "rds_from_lambda" {
-  type                     = "ingress"
-  from_port               = 5432
-  to_port                 = 5432
-  protocol                = "tcp"
-  security_group_id       = aws_security_group.rds.id
-  source_security_group_id = aws_security_group.lambda_db_setup.id
-  description             = "Allow Lambda database setup function to access RDS"
-}
