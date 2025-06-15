@@ -188,8 +188,8 @@ resource "aws_apprunner_service" "main" {
           # Build commands for Python 3.11 using build script
           build_command = "sh build.sh"
           
-          # Start command for Python 3.11
-          start_command = "gunicorn --bind 0.0.0.0:8000 --workers $(nproc) --timeout 60 --keep-alive 2 --max-requests 1000 --max-requests-jitter 100 hogtown_project.wsgi:application"
+          # Start command for Python 3.11 using start script
+          start_command = "sh start.sh"
           
           runtime_environment_variables = merge({
             DJANGO_SETTINGS_MODULE = "hogtown_project.settings"
