@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+nslookup pypi.org
+
+ping google.com
+
 echo "Installing Python dependencies for runtime..."
 pip3 install -r requirements.txt
 
