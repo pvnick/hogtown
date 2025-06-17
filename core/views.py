@@ -13,11 +13,20 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView
+from django.http import HttpResponse
 
 from .forms import MinistryLeaderRegistrationForm
 from .models import Category, Event, EventException, Ministry, Parish, User
 
 logger = logging.getLogger(__name__)
+
+
+def health_check(request):
+    """
+    Simple health check endpoint for App Runner.
+    Returns HTTP 200 without database dependencies.
+    """
+    return HttpResponse("OK", content_type="text/plain")
 
 
 def parish_directory(request):
