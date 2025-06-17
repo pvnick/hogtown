@@ -30,8 +30,47 @@ def health_check(request):
 
 
 def parish_directory(request):
-    parishes = Parish.objects.all().order_by("name")
-    return render(request, "core/parish_directory.html", {"parishes": parishes})
+    """Main view for parish directory with CloudWatch debugging."""
+    import traceback
+    try:
+        logger.info("START parish_directory view")
+        logger.info(f"Request: {request.method} {request.path}")
+        logger.info(f"Host: {request.get_host()}")
+        
+        # Debug database connection
+        try:
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                result = cursor.fetchone()
+                logger.info(f"Database connection OK: {result}")
+        except Exception as db_error:
+            logger.error(f"Database connection FAILED: {type(db_error).__name__}: {str(db_error)}")
+            raise
+        
+        # Debug model query
+        try:
+            parish_count = Parish.objects.count()
+            logger.info(f"Parish count: {parish_count}")
+            parishes = Parish.objects.all().order_by("name")
+            logger.info(f"Fetched {len(parishes)} parishes")
+        except Exception as model_error:
+            logger.error(f"Model query FAILED: {type(model_error).__name__}: {str(model_error)}")
+            raise
+        
+        # Debug template rendering
+        try:
+            response = render(request, "core/parish_directory.html", {"parishes": parishes})
+            logger.info("Template render OK")
+            return response
+        except Exception as template_error:
+            logger.error(f"Template render FAILED: {type(template_error).__name__}: {str(template_error)}")
+            raise
+            
+    except Exception as e:
+        logger.error(f"FATAL ERROR in parish_directory: {type(e).__name__}: {str(e)}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise  # Let Django's error handling take over
 
 
 def parish_detail(request, parish_id):

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+import logging
 
 import dj_database_url
 from dotenv import load_dotenv
@@ -239,3 +240,14 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+# Debug logging for startup configuration
+startup_logger = logging.getLogger('django.startup')
+startup_logger.info("=== DJANGO STARTUP DEBUG ===")
+startup_logger.info(f"DEBUG mode: {DEBUG}")
+startup_logger.info(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
+startup_logger.info(f"DATABASE_URL env var: {'SET' if os.getenv('DATABASE_URL') else 'NOT SET'}")
+startup_logger.info(f"DB_HOST env var: {'SET' if os.getenv('DB_HOST') else 'NOT SET'}")
+startup_logger.info(f"SECRET_KEY env var: {'SET' if os.getenv('SECRET_KEY') else 'NOT SET'}")
+startup_logger.info(f"Database engine: {DATABASES['default']['ENGINE']}")
+startup_logger.info("=== END STARTUP DEBUG ===")
