@@ -14,7 +14,7 @@ locals {
     availability_zones      = try(local.raw_config.availability_zones, [])
     
     # Database configuration with defaults
-    postgres_version             = try(local.raw_config.postgres_version, "17.2")
+    postgres_version             = try(local.raw_config.postgres_version, "17.4")
     db_instance_class           = try(local.raw_config.db_instance_class, "db.t4g.micro")
     db_allocated_storage        = try(local.raw_config.db_allocated_storage, 20)
     db_max_allocated_storage    = try(local.raw_config.db_max_allocated_storage, 1000)

@@ -131,9 +131,44 @@ resource "aws_iam_policy" "secrets_access" {
   }
 }
 
+# Policy for accessing ECR when using container deployment
+resource "aws_iam_policy" "ecr_access" {
+  count = var.ecr_repository_url != "" ? 1 : 0
+  name  = "${var.app_name}-ecr-access"
+  description = "Allow App Runner to pull images from ECR"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "${var.app_name}-ecr-policy"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "secrets_access" {
   role       = aws_iam_role.apprunner_service_role.name
   policy_arn = aws_iam_policy.secrets_access.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecr_access" {
+  count      = var.ecr_repository_url != "" ? 1 : 0
+  role       = aws_iam_role.apprunner_service_role.name
+  policy_arn = aws_iam_policy.ecr_access[0].arn
 }
 
 # IAM role for App Runner build (accessing ECR, etc.)
@@ -172,25 +207,14 @@ resource "aws_apprunner_service" "main" {
   source_configuration {
     auto_deployments_enabled = var.auto_deploy_enabled
     
-    authentication_configuration {
-      connection_arn = var.github_connection_arn
-    }
-    
-    code_repository {
-      repository_url = var.github_repository_url
-      
-      code_configuration {
-        configuration_source = "API"  # Use API configuration for secrets
+    # Use image repository when ECR repository URL is provided
+    dynamic "image_repository" {
+      for_each = var.ecr_repository_url != "" ? [1] : []
+      content {
+        image_identifier      = "${var.ecr_repository_url}:latest"
+        image_repository_type = "ECR"
         
-        code_configuration_values {
-          runtime = "PYTHON_311"
-          
-          # Build commands for Python 3.11 using build script
-          build_command = "sh build.sh"
-          
-          # Start command for Python 3.11 using start script
-          start_command = "sh start.sh"
-          
+        image_configuration {
           runtime_environment_variables = merge({
             DJANGO_SETTINGS_MODULE = "hogtown_project.settings"
             DEBUG                  = "False"
@@ -213,19 +237,69 @@ resource "aws_apprunner_service" "main" {
               SECRET_KEY            = "${var.app_secrets_arn}:SECRET_KEY::"
               PROSOPO_SITE_KEY     = "${var.app_secrets_arn}:PROSOPO_SITE_KEY::"
               PROSOPO_SECRET_KEY   = "${var.app_secrets_arn}:PROSOPO_SECRET_KEY::"
-              AWS_ACCESS_KEY_ID    = "${var.app_secrets_arn}:AWS_ACCESS_KEY_ID::"
-              AWS_SECRET_ACCESS_KEY = "${var.app_secrets_arn}:AWS_SECRET_ACCESS_KEY::"
-              AWS_REGION           = "${var.app_secrets_arn}:AWS_REGION::"
+              EMAIL_SERVICE_ACCESS_KEY_ID    = "${var.app_secrets_arn}:EMAIL_SERVICE_ACCESS_KEY_ID::"
+              EMAIL_SERVICE_SECRET_ACCESS_KEY = "${var.app_secrets_arn}:EMAIL_SERVICE_SECRET_ACCESS_KEY::"
+              EMAIL_SERVICE_AWS_REGION       = "${var.app_secrets_arn}:AWS_REGION::"
               DEFAULT_FROM_EMAIL   = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL::"
               ALLOWED_HOSTS        = "${var.app_secrets_arn}:ALLOWED_HOSTS::"
             } : {}
           )
         }
       }
-      
-      source_code_version {
-        type  = "BRANCH"
-        value = var.github_branch
+    }
+    
+    # Use code repository when ECR repository URL is not provided (fallback)
+    dynamic "code_repository" {
+      for_each = var.ecr_repository_url == "" ? [1] : []
+      content {
+        repository_url = var.github_repository_url
+        
+        authentication_configuration {
+          connection_arn = var.github_connection_arn
+        }
+        
+        code_configuration {
+          configuration_source = "API"
+          
+          code_configuration_values {
+            runtime = "PYTHON_311"
+            build_command = "sh build.sh"
+            start_command = "sh start.sh"
+            
+            runtime_environment_variables = merge({
+              DJANGO_SETTINGS_MODULE = "hogtown_project.settings"
+              DEBUG                  = "False"
+              EMAIL_BACKEND         = "anymail.backends.amazon_ses.EmailBackend"
+              PORT                   = "8000"
+            }, var.additional_env_vars)
+            
+            runtime_environment_secrets = merge(
+              var.database_secret_arn != "" ? {
+                DATABASE_URL = "${var.database_secret_arn}:database_url::"
+                DB_USERNAME  = "${var.database_secret_arn}:username::"
+                DB_PASSWORD  = "${var.database_secret_arn}:password::"
+                DB_HOST      = "${var.database_secret_arn}:endpoint::"
+                DB_PORT      = "${var.database_secret_arn}:port::"
+                DB_NAME      = "${var.database_secret_arn}:dbname::"
+              } : {},
+              var.app_secrets_arn != "" ? {
+                SECRET_KEY            = "${var.app_secrets_arn}:SECRET_KEY::"
+                PROSOPO_SITE_KEY     = "${var.app_secrets_arn}:PROSOPO_SITE_KEY::"
+                PROSOPO_SECRET_KEY   = "${var.app_secrets_arn}:PROSOPO_SECRET_KEY::"
+                EMAIL_SERVICE_ACCESS_KEY_ID    = "${var.app_secrets_arn}:EMAIL_SERVICE_ACCESS_KEY_ID::"
+                EMAIL_SERVICE_SECRET_ACCESS_KEY = "${var.app_secrets_arn}:EMAIL_SERVICE_SECRET_ACCESS_KEY::"
+                EMAIL_SERVICE_AWS_REGION       = "${var.app_secrets_arn}:AWS_REGION::"
+                DEFAULT_FROM_EMAIL   = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL::"
+                ALLOWED_HOSTS        = "${var.app_secrets_arn}:ALLOWED_HOSTS::"
+              } : {}
+            )
+          }
+        }
+        
+        source_code_version {
+          type  = "BRANCH"
+          value = var.github_branch
+        }
       }
     }
   }

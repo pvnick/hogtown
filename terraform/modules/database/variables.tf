@@ -33,9 +33,9 @@ variable "database_subnet_ids" {
 }
 
 variable "postgres_version" {
-  description = "PostgreSQL version"
+  description = "PostgreSQL version - Note: RDS auto minor version upgrade is enabled, so the actual running version may be newer than specified here. The lifecycle rule ignores engine_version changes to prevent Terraform from attempting downgrades."
   type        = string
-  default     = "17.2"
+  default     = "17.4"
   
   validation {
     condition = can(regex("^(11|12|13|14|15|16|17)\\.[0-9]+$", var.postgres_version))

@@ -186,13 +186,13 @@ resource "aws_apprunner_connection" "github" {
   }
 }
 
-# Application secrets in AWS Secrets Manager
-resource "aws_secretsmanager_secret" "app_secrets" {
-  name        = "${local.config.project_name}-app-secrets"
-  description = "Application secrets for ${local.config.project_name}"
+# Django application configuration in AWS Secrets Manager
+resource "aws_secretsmanager_secret" "django_app_config" {
+  name        = "${local.config.project_name}-django-app-config"
+  description = "Django application configuration and email service credentials for ${local.config.project_name}"
 
   tags = {
-    Name    = "${local.config.project_name}-app-secrets"
+    Name    = "${local.config.project_name}-django-app-config"
     Project = local.config.project_name
   }
 }
@@ -208,20 +208,20 @@ resource "random_password" "django_secret_key" {
 # Automatically generates and rotates access keys stored in Secrets Manager
 
 # IAM user for SES email sending (principle of least privilege)
-resource "aws_iam_user" "ses_user" {
-  name = "${local.config.project_name}-ses-user"
+resource "aws_iam_user" "email_service_user" {
+  name = "${local.config.project_name}-email-service-user"
   path = "/"
 
   tags = {
-    Name    = "${local.config.project_name}-ses-user"
+    Name    = "${local.config.project_name}-email-service-user"
     Project = local.config.project_name
     Purpose = "SES Email Sending"
   }
 }
 
 # IAM policy with minimal SES permissions (send-only)
-resource "aws_iam_policy" "ses_policy" {
-  name        = "${local.config.project_name}-ses-policy"
+resource "aws_iam_policy" "email_sending_policy" {
+  name        = "${local.config.project_name}-email-sending-policy"
   description = "Minimal policy for SES email sending - send operations only"
 
   policy = jsonencode({
@@ -246,35 +246,35 @@ resource "aws_iam_policy" "ses_policy" {
   })
 
   tags = {
-    Name    = "${local.config.project_name}-ses-policy"
+    Name    = "${local.config.project_name}-email-sending-policy"
     Project = local.config.project_name
   }
 }
 
 # Attach SES policy to user
-resource "aws_iam_user_policy_attachment" "ses_user_policy" {
-  user       = aws_iam_user.ses_user.name
-  policy_arn = aws_iam_policy.ses_policy.arn
+resource "aws_iam_user_policy_attachment" "email_service_user_policy" {
+  user       = aws_iam_user.email_service_user.name
+  policy_arn = aws_iam_policy.email_sending_policy.arn
 }
 
-# Auto-generate access keys for SES user
+# Auto-generate access keys for email service user
 # Keys are automatically stored in AWS Secrets Manager for secure access
-resource "aws_iam_access_key" "ses_user_key" {
-  user = aws_iam_user.ses_user.name
+resource "aws_iam_access_key" "email_service_access_key" {
+  user = aws_iam_user.email_service_user.name
 }
 
-# Application secrets values
-resource "aws_secretsmanager_secret_version" "app_secrets" {
-  secret_id = aws_secretsmanager_secret.app_secrets.id
+# Django application configuration values
+resource "aws_secretsmanager_secret_version" "django_app_config" {
+  secret_id = aws_secretsmanager_secret.django_app_config.id
   secret_string = jsonencode({
     # Django application secrets
     SECRET_KEY           = random_password.django_secret_key.result
     PROSOPO_SITE_KEY    = local.config.prosopo_site_key
     PROSOPO_SECRET_KEY  = local.config.prosopo_secret_key
     
-    # AWS SES credentials (auto-generated)
-    AWS_ACCESS_KEY_ID     = aws_iam_access_key.ses_user_key.id
-    AWS_SECRET_ACCESS_KEY = aws_iam_access_key.ses_user_key.secret
+    # Email service credentials (auto-generated)
+    EMAIL_SERVICE_ACCESS_KEY_ID     = aws_iam_access_key.email_service_access_key.id
+    EMAIL_SERVICE_SECRET_ACCESS_KEY = aws_iam_access_key.email_service_access_key.secret
     AWS_REGION           = local.config.aws_region
     DEFAULT_FROM_EMAIL   = local.config.default_from_email
     ALLOWED_HOSTS        = local.config.allowed_hosts

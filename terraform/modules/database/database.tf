@@ -105,6 +105,13 @@ resource "aws_db_instance" "postgres" {
     Project     = var.project_name
     Environment = "shared"
   }
+
+  # Ignore engine_version changes to prevent Terraform from attempting downgrades
+  # when RDS auto-updates minor versions (e.g., 17.2 -> 17.4)
+  # This allows AWS to manage minor version updates while Terraform manages other aspects
+  lifecycle {
+    ignore_changes = [engine_version]
+  }
 }
 
 # Parameter group for PostgreSQL optimization

@@ -270,9 +270,16 @@ terraform apply
 ```
 
 **Creates:**
+- VPC with public and private subnets across multiple AZs
 - RDS PostgreSQL instance with security groups
-- GitHub connection (requires manual authorization)
+- GitHub connection for App Runner (requires manual authorization)
 - Master database credentials in Secrets Manager
+- Django application configuration in Secrets Manager
+- Email service IAM user with auto-generated SES credentials
+- ECR repository for Docker images
+- ECR push IAM user with auto-generated credentials for CI/CD
+- Lambda function for database setup operations
+- VPC endpoints for AWS services
 
 ### 2. Deploy Environment-Specific Infrastructure
 
@@ -365,9 +372,29 @@ terraform destroy
 
 ## Troubleshooting
 
-### GitHub Connection Issues
-- Manual authorization required in AWS console after first deployment
-- Connection status available in Terraform outputs
+### GitHub Connection Authorization
+
+After deploying shared infrastructure, you must manually authorize the GitHub connection:
+
+1. **Get the connection ARN**:
+   ```bash
+   cd terraform/shared
+   terraform output github_connection_arn
+   ```
+
+2. **Authorize in AWS Console**:
+   - Navigate to App Runner → Connections in AWS Console
+   - Find your connection (named `hogtown-github-connection`)
+   - Click "Complete handshake" or "Authorize"
+   - Follow GitHub OAuth flow to grant access
+
+3. **Verify connection status**:
+   ```bash
+   terraform output github_connection_status
+   # Should show "AVAILABLE" when authorized
+   ```
+
+**Note**: The connection only needs to be authorized once and will persist across deployments.
 
 ### Database Connection Issues
 - Verify VPC connector is enabled and properly configured
@@ -378,6 +405,92 @@ terraform destroy
 - Check CloudWatch logs for application errors
 - Verify `apprunner.yaml` configuration
 - Ensure database migrations complete successfully
+
+### Setting up GitHub Actions CI/CD
+
+After deploying the shared infrastructure, configure GitHub Actions:
+
+1. **Retrieve ECR Push Credentials**:
+   ```bash
+   cd terraform/shared
+   
+   # Option 1: Get from Terraform outputs
+   terraform output -raw ecr_push_access_key_id
+   
+   # Option 2: Get from AWS Secrets Manager (includes both keys)
+   aws secretsmanager get-secret-value \
+     --secret-id hogtown-ecr-push-credentials \
+     --query SecretString \
+     --output text | jq .
+   ```
+
+2. **Add to GitHub Repository Secrets**:
+   - Navigate to your GitHub repository
+   - Go to Settings → Secrets and variables → Actions
+   - Add these secrets:
+     - `ECR_PUSH_ACCESS_KEY_ID`
+     - `ECR_PUSH_SECRET_ACCESS_KEY`
+
+3. **Verify CI/CD Pipeline**:
+   - Push to `main` or `develop` branch
+   - Check Actions tab for build status
+   - Confirm Docker image pushed to ECR
+   - Verify App Runner deployment triggered
+
+## Auto-Generated Credentials
+
+Terraform automatically creates and manages several sets of credentials for security and convenience:
+
+### 1. Database Credentials
+- **Location**: AWS Secrets Manager
+- **Secret Name**: `hogtown-rds-master-credentials`
+- **Contains**: Master username and password for RDS
+- **Used by**: Database administration, initial setup
+
+### 2. Django Application Configuration
+- **Location**: AWS Secrets Manager  
+- **Secret Name**: `hogtown-django-app-config`
+- **Contains**:
+  - Django SECRET_KEY (auto-generated)
+  - Email service credentials (auto-generated)
+  - Prosopo CAPTCHA keys (from config)
+  - Database connection details
+- **Used by**: App Runner services
+
+### 3. Email Service Credentials
+- **IAM User**: `hogtown-email-service-user`
+- **Permissions**: SES send-only access
+- **Credentials**: Auto-generated and stored in Django app config
+- **Used by**: Application email functionality
+
+### 4. ECR Push Credentials
+- **IAM User**: `hogtown-ecr-push-user`
+- **Secret Name**: `hogtown-ecr-push-credentials`
+- **Permissions**: ECR push and App Runner deployment
+- **Used by**: GitHub Actions CI/CD
+
+### Retrieving Credentials
+
+```bash
+# Get all credential secret names
+aws secretsmanager list-secrets --query "SecretList[?contains(Name, 'hogtown')].Name"
+
+# Retrieve specific secret
+aws secretsmanager get-secret-value \
+  --secret-id SECRET_NAME \
+  --query SecretString \
+  --output text | jq .
+```
+
+### Credential Rotation
+
+All IAM access keys can be rotated without application downtime:
+
+1. Create new access key for the IAM user
+2. Update the secret in Secrets Manager
+3. Delete the old access key
+
+App Runner will automatically pick up the new credentials on the next deployment.
 
 ## Cost Optimization
 

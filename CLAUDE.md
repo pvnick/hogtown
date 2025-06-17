@@ -33,9 +33,9 @@ This is a Django web application project called "hogtown_project" with a core ap
 - To test with AWS SES locally, update `.env` file:
   ```
   EMAIL_BACKEND=anymail.backends.amazon_ses.EmailBackend
-  AWS_ACCESS_KEY_ID=your-key-here
-  AWS_SECRET_ACCESS_KEY=your-secret-here
-  AWS_REGION=us-east-1
+  EMAIL_SERVICE_ACCESS_KEY_ID=your-key-here
+  EMAIL_SERVICE_SECRET_ACCESS_KEY=your-secret-here
+  EMAIL_SERVICE_AWS_REGION=us-east-1
   ```
 
 ### Production

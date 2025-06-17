@@ -51,13 +51,14 @@ module "staging_apprunner" {
   github_repository_url      = data.terraform_remote_state.shared.outputs.github_repository_url
   github_branch              = local.config.staging_branch
   github_connection_arn      = data.terraform_remote_state.shared.outputs.github_connection_arn
+  ecr_repository_url         = data.terraform_remote_state.shared.outputs.ecr_repository_url
   auto_deploy_enabled        = local.config.auto_deploy_enabled
   cpu                        = local.config.staging_cpu
   memory                     = local.config.staging_memory
   secrets_manager_arns       = [for arn in module.database_setup.environment_database_secrets : arn]
   database_secret_arn        = module.database_setup.environment_database_secrets["${local.config.project_name}_staging"]
-  app_secrets_arn           = data.terraform_remote_state.shared.outputs.app_secrets_arn
-  app_secrets_name          = data.terraform_remote_state.shared.outputs.app_secrets_name
+  app_secrets_arn           = data.terraform_remote_state.shared.outputs.django_app_config_arn
+  app_secrets_name          = data.terraform_remote_state.shared.outputs.django_app_config_name
   observability_enabled      = local.config.observability_enabled
   log_retention_days         = local.config.log_retention_days
   

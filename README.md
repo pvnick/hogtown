@@ -367,6 +367,74 @@ aws dynamodb create-table \
 
 **Note**: See [`docs/TERRAFORM_DEPLOYMENT.md`](docs/TERRAFORM_DEPLOYMENT.md) for comprehensive deployment instructions, security considerations, troubleshooting guides, and cost optimization strategies.
 
+## GitHub Secrets Configuration
+
+The CI/CD pipeline requires AWS credentials to push Docker images to ECR and trigger App Runner deployments.
+
+### Automated Setup (Recommended)
+
+Terraform automatically creates an IAM user with minimal ECR push permissions and stores the credentials in AWS Secrets Manager. After running `terraform apply` in the shared infrastructure:
+
+1. **Retrieve the auto-generated credentials**:
+   ```bash
+   # Get the credentials from Terraform output
+   cd terraform/shared
+   terraform output -json ecr_push_access_key_id
+   
+   # Or retrieve from AWS Secrets Manager
+   aws secretsmanager get-secret-value \
+     --secret-id hogtown-ecr-push-credentials \
+     --query SecretString \
+     --output text | jq .
+   ```
+
+2. **Add to GitHub Secrets**:
+   - Go to your GitHub repository → Settings → Secrets and variables → Actions
+   - Add these repository secrets:
+     - `ECR_PUSH_ACCESS_KEY_ID` - The auto-generated access key ID
+     - `ECR_PUSH_SECRET_ACCESS_KEY` - The auto-generated secret access key
+
+### Manual Setup (Alternative)
+
+If you prefer to manage credentials manually, create an IAM user with this policy:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "ecr:PutImage",
+        "ecr:InitiateLayerUpload",
+        "ecr:UploadLayerPart",
+        "ecr:CompleteLayerUpload"
+      ],
+      "Resource": [
+        "arn:aws:ecr:us-east-1:*:repository/hogtown-app"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "ecr:GetAuthorizationToken",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "apprunner:ListServices",
+        "apprunner:StartDeployment"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

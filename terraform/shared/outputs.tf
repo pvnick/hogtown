@@ -33,14 +33,14 @@ output "github_connection_status" {
   value       = aws_apprunner_connection.github.status
 }
 
-output "app_secrets_arn" {
-  description = "The ARN of the application secrets in Secrets Manager"
-  value       = aws_secretsmanager_secret.app_secrets.arn
+output "django_app_config_arn" {
+  description = "The ARN of the Django application configuration in Secrets Manager"
+  value       = aws_secretsmanager_secret.django_app_config.arn
 }
 
-output "app_secrets_name" {
-  description = "The name of the application secrets in Secrets Manager"
-  value       = aws_secretsmanager_secret.app_secrets.name
+output "django_app_config_name" {
+  description = "The name of the Django application configuration in Secrets Manager"
+  value       = aws_secretsmanager_secret.django_app_config.name
 }
 
 # VPC outputs
@@ -94,25 +94,25 @@ output "github_repository_url" {
   value       = local.config.github_repository_url
 }
 
-# AWS SES Infrastructure Outputs
-output "ses_user_name" {
-  description = "The name of the auto-generated SES IAM user"
-  value       = aws_iam_user.ses_user.name
+# Email Service Infrastructure Outputs
+output "email_service_user_name" {
+  description = "The name of the auto-generated email service IAM user"
+  value       = aws_iam_user.email_service_user.name
 }
 
-output "ses_user_arn" {
-  description = "The ARN of the auto-generated SES IAM user"
-  value       = aws_iam_user.ses_user.arn
+output "email_service_user_arn" {
+  description = "The ARN of the auto-generated email service IAM user"
+  value       = aws_iam_user.email_service_user.arn
 }
 
-output "ses_policy_arn" {
-  description = "The ARN of the SES IAM policy"
-  value       = aws_iam_policy.ses_policy.arn
+output "email_sending_policy_arn" {
+  description = "The ARN of the email sending IAM policy"
+  value       = aws_iam_policy.email_sending_policy.arn
 }
 
-output "ses_access_key_id" {
-  description = "The auto-generated access key ID for SES (sensitive)"
-  value       = aws_iam_access_key.ses_user_key.id
+output "email_service_access_key_id" {
+  description = "The auto-generated access key ID for email service (sensitive)"
+  value       = aws_iam_access_key.email_service_access_key.id
   sensitive   = true
 }
 
@@ -130,5 +130,42 @@ output "lambda_function_name" {
 output "lambda_security_group_id" {
   description = "Security group ID of the Lambda database setup function"
   value       = module.database.lambda_security_group_id
+}
+
+output "ecr_repository_url" {
+  value       = aws_ecr_repository.hogtown_app.repository_url
+  description = "URL of the ECR repository"
+}
+
+output "ecr_repository_arn" {
+  value       = aws_ecr_repository.hogtown_app.arn
+  description = "ARN of the ECR repository"
+}
+
+# ECR CI/CD User Outputs
+output "ecr_push_user_name" {
+  description = "The name of the auto-generated ECR push IAM user"
+  value       = aws_iam_user.ecr_push_user.name
+}
+
+output "ecr_push_user_arn" {
+  description = "The ARN of the auto-generated ECR push IAM user"
+  value       = aws_iam_user.ecr_push_user.arn
+}
+
+output "ecr_push_credentials_secret_arn" {
+  description = "The ARN of the secret containing ECR push credentials"
+  value       = aws_secretsmanager_secret.ecr_push_credentials.arn
+}
+
+output "ecr_push_credentials_secret_name" {
+  description = "The name of the secret containing ECR push credentials"
+  value       = aws_secretsmanager_secret.ecr_push_credentials.name
+}
+
+output "ecr_push_access_key_id" {
+  description = "The auto-generated access key ID for ECR push (sensitive)"
+  value       = aws_iam_access_key.ecr_push_access_key.id
+  sensitive   = true
 }
 
