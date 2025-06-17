@@ -52,6 +52,7 @@ module "staging_apprunner" {
   github_branch              = local.config.staging_branch
   github_connection_arn      = data.terraform_remote_state.shared.outputs.github_connection_arn
   ecr_repository_url         = data.terraform_remote_state.shared.outputs.ecr_repository_url
+  image_tag                  = "develop-latest"
   auto_deploy_enabled        = local.config.auto_deploy_enabled
   cpu                        = local.config.staging_cpu
   memory                     = local.config.staging_memory

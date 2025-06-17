@@ -59,6 +59,12 @@ variable "ecr_repository_url" {
   default     = ""
 }
 
+variable "image_tag" {
+  description = "Docker image tag to deploy (e.g., latest, develop-latest, prod)"
+  type        = string
+  default     = "latest"
+}
+
 variable "auto_deploy_enabled" {
   description = "Enable automatic deployments on code changes"
   type        = bool

@@ -211,7 +211,7 @@ resource "aws_apprunner_service" "main" {
     dynamic "image_repository" {
       for_each = var.ecr_repository_url != "" ? [1] : []
       content {
-        image_identifier      = "${var.ecr_repository_url}:latest"
+        image_identifier      = "${var.ecr_repository_url}:${var.image_tag}"
         image_repository_type = "ECR"
         
         image_configuration {

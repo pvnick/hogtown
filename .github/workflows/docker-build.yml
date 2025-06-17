@@ -74,10 +74,22 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Force App Runner deployment
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
       run: |
-        SERVICE_ARN=$(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='hogtown-app'].ServiceArn" --output text)
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          # Deploy to production
+          SERVICE_NAME="hogtown-app"
+          echo "Triggering production deployment..."
+        elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+          # Deploy to staging
+          SERVICE_NAME="hogtown-staging"
+          echo "Triggering staging deployment..."
+        fi
+        
+        SERVICE_ARN=$(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='${SERVICE_NAME}'].ServiceArn" --output text)
         if [ ! -z "$SERVICE_ARN" ]; then
           echo "Triggering deployment for service: $SERVICE_ARN"
           aws apprunner start-deployment --service-arn $SERVICE_ARN
+        else
+          echo "Warning: Service ${SERVICE_NAME} not found"
         fi

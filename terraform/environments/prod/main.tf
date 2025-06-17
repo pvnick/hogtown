@@ -49,6 +49,7 @@ module "prod_apprunner" {
   github_branch              = local.config.prod_branch
   github_connection_arn      = data.terraform_remote_state.shared.outputs.github_connection_arn
   ecr_repository_url         = data.terraform_remote_state.shared.outputs.ecr_repository_url
+  image_tag                  = "latest"
   auto_deploy_enabled        = local.config.auto_deploy_enabled
   cpu                        = local.config.prod_cpu
   memory                     = local.config.prod_memory
