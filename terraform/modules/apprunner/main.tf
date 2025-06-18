@@ -207,99 +207,46 @@ resource "aws_apprunner_service" "main" {
   source_configuration {
     auto_deployments_enabled = var.auto_deploy_enabled
     
-    # Use image repository when ECR repository URL is provided
-    dynamic "image_repository" {
-      for_each = var.ecr_repository_url != "" ? [1] : []
-      content {
-        image_identifier      = "${var.ecr_repository_url}:${var.image_tag}"
-        image_repository_type = "ECR"
-        
-        image_configuration {
-          runtime_environment_variables = merge({
-            DJANGO_SETTINGS_MODULE = "hogtown_project.settings"
-            DEBUG                  = "False"
-            EMAIL_BACKEND         = "anymail.backends.amazon_ses.EmailBackend"
-            PORT                   = "8000"
-          }, var.additional_env_vars)
-          
-          runtime_environment_secrets = merge(
-            # Database connection string from database secret
-            var.database_secret_arn != "" ? {
-              DATABASE_URL = "${var.database_secret_arn}:database_url::"
-              DB_USERNAME  = "${var.database_secret_arn}:username::"
-              DB_PASSWORD  = "${var.database_secret_arn}:password::"
-              DB_HOST      = "${var.database_secret_arn}:endpoint::"
-              DB_PORT      = "${var.database_secret_arn}:port::"
-              DB_NAME      = "${var.database_secret_arn}:dbname::"
-            } : {},
-            # Application secrets from central secret store
-            var.app_secrets_arn != "" ? {
-              SECRET_KEY            = "${var.app_secrets_arn}:SECRET_KEY::"
-              PROSOPO_SITE_KEY     = "${var.app_secrets_arn}:PROSOPO_SITE_KEY::"
-              PROSOPO_SECRET_KEY   = "${var.app_secrets_arn}:PROSOPO_SECRET_KEY::"
-              EMAIL_SERVICE_ACCESS_KEY_ID    = "${var.app_secrets_arn}:EMAIL_SERVICE_ACCESS_KEY_ID::"
-              EMAIL_SERVICE_SECRET_ACCESS_KEY = "${var.app_secrets_arn}:EMAIL_SERVICE_SECRET_ACCESS_KEY::"
-              EMAIL_SERVICE_AWS_REGION       = "${var.app_secrets_arn}:AWS_REGION::"
-              DEFAULT_FROM_EMAIL   = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL::"
-              ALLOWED_HOSTS        = "${var.app_secrets_arn}:ALLOWED_HOSTS::"
-            } : {}
-          )
-        }
-      }
+    # Authentication configuration for ECR access
+    authentication_configuration {
+      access_role_arn = aws_iam_role.apprunner_build_role.arn
     }
     
-    # Use code repository when ECR repository URL is not provided (fallback)
-    dynamic "code_repository" {
-      for_each = var.ecr_repository_url == "" ? [1] : []
-      content {
-        repository_url = var.github_repository_url
+    # Use ECR image repository for deployment
+    image_repository {
+      image_identifier      = "${var.ecr_repository_url}:${var.image_tag}"
+      image_repository_type = "ECR"
+      
+      image_configuration {
+        port = "8000"
+        runtime_environment_variables = merge({
+          DJANGO_SETTINGS_MODULE = "hogtown_project.settings"
+          DEBUG                  = "False"
+          EMAIL_BACKEND         = "anymail.backends.amazon_ses.EmailBackend"
+          ALLOWED_HOSTS         = "*"
+        }, var.additional_env_vars)
         
-        authentication_configuration {
-          connection_arn = var.github_connection_arn
-        }
-        
-        code_configuration {
-          configuration_source = "API"
-          
-          code_configuration_values {
-            runtime = "PYTHON_311"
-            build_command = "sh build.sh"
-            start_command = "sh start.sh"
-            
-            runtime_environment_variables = merge({
-              DJANGO_SETTINGS_MODULE = "hogtown_project.settings"
-              DEBUG                  = "False"
-              EMAIL_BACKEND         = "anymail.backends.amazon_ses.EmailBackend"
-              PORT                   = "8000"
-            }, var.additional_env_vars)
-            
-            runtime_environment_secrets = merge(
-              var.database_secret_arn != "" ? {
-                DATABASE_URL = "${var.database_secret_arn}:database_url::"
-                DB_USERNAME  = "${var.database_secret_arn}:username::"
-                DB_PASSWORD  = "${var.database_secret_arn}:password::"
-                DB_HOST      = "${var.database_secret_arn}:endpoint::"
-                DB_PORT      = "${var.database_secret_arn}:port::"
-                DB_NAME      = "${var.database_secret_arn}:dbname::"
-              } : {},
-              var.app_secrets_arn != "" ? {
-                SECRET_KEY            = "${var.app_secrets_arn}:SECRET_KEY::"
-                PROSOPO_SITE_KEY     = "${var.app_secrets_arn}:PROSOPO_SITE_KEY::"
-                PROSOPO_SECRET_KEY   = "${var.app_secrets_arn}:PROSOPO_SECRET_KEY::"
-                EMAIL_SERVICE_ACCESS_KEY_ID    = "${var.app_secrets_arn}:EMAIL_SERVICE_ACCESS_KEY_ID::"
-                EMAIL_SERVICE_SECRET_ACCESS_KEY = "${var.app_secrets_arn}:EMAIL_SERVICE_SECRET_ACCESS_KEY::"
-                EMAIL_SERVICE_AWS_REGION       = "${var.app_secrets_arn}:AWS_REGION::"
-                DEFAULT_FROM_EMAIL   = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL::"
-                ALLOWED_HOSTS        = "${var.app_secrets_arn}:ALLOWED_HOSTS::"
-              } : {}
-            )
-          }
-        }
-        
-        source_code_version {
-          type  = "BRANCH"
-          value = var.github_branch
-        }
+        runtime_environment_secrets = merge(
+          # Database connection string from database secret
+          var.database_secret_arn != "" ? {
+            DATABASE_URL = "${var.database_secret_arn}:database_url::"
+            DB_USERNAME  = "${var.database_secret_arn}:username::"
+            DB_PASSWORD  = "${var.database_secret_arn}:password::"
+            DB_HOST      = "${var.database_secret_arn}:endpoint::"
+            DB_PORT      = "${var.database_secret_arn}:port::"
+            DB_NAME      = "${var.database_secret_arn}:dbname::"
+          } : {},
+          # Application secrets from central secret store
+          var.app_secrets_arn != "" ? {
+            SECRET_KEY            = "${var.app_secrets_arn}:SECRET_KEY::"
+            PROSOPO_SITE_KEY     = "${var.app_secrets_arn}:PROSOPO_SITE_KEY::"
+            PROSOPO_SECRET_KEY   = "${var.app_secrets_arn}:PROSOPO_SECRET_KEY::"
+            EMAIL_SERVICE_ACCESS_KEY_ID    = "${var.app_secrets_arn}:EMAIL_SERVICE_ACCESS_KEY_ID::"
+            EMAIL_SERVICE_SECRET_ACCESS_KEY = "${var.app_secrets_arn}:EMAIL_SERVICE_SECRET_ACCESS_KEY::"
+            EMAIL_SERVICE_AWS_REGION       = "${var.app_secrets_arn}:AWS_REGION::"
+            DEFAULT_FROM_EMAIL   = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL::"
+          } : {}
+        )
       }
     }
   }

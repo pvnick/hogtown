@@ -48,9 +48,6 @@ module "staging_apprunner" {
   enable_vpc_connector       = true
   subnet_ids                 = data.terraform_remote_state.shared.outputs.apprunner_private_subnet_ids
   database_security_groups   = [data.terraform_remote_state.shared.outputs.database_security_group_id]
-  github_repository_url      = data.terraform_remote_state.shared.outputs.github_repository_url
-  github_branch              = local.config.staging_branch
-  github_connection_arn      = data.terraform_remote_state.shared.outputs.github_connection_arn
   ecr_repository_url         = data.terraform_remote_state.shared.outputs.ecr_repository_url
   image_tag                  = "develop-latest"
   auto_deploy_enabled        = local.config.auto_deploy_enabled

@@ -36,22 +36,6 @@ variable "database_security_groups" {
   default     = []
 }
 
-variable "github_repository_url" {
-  description = "GitHub repository URL"
-  type        = string
-}
-
-variable "github_branch" {
-  description = "GitHub branch to deploy from"
-  type        = string
-  default     = "main"
-}
-
-variable "github_connection_arn" {
-  description = "GitHub connection ARN"
-  type        = string
-  default     = ""
-}
 
 variable "ecr_repository_url" {
   description = "ECR repository URL for container deployment (if empty, uses source code deployment)"
