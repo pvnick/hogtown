@@ -179,11 +179,19 @@ CSP_SCRIPT_SRC = [
 CSP_STYLE_SRC = [
     "'self'",
     "https://cdn.jsdelivr.net",
-    "'unsafe-inline'",  # Needed for inline styles
+    "'unsafe-inline'",  # Needed for inline styles and Bootstrap data: URLs
 ]
-CSP_IMG_SRC = ["'self'", "data:", "https:"]
-CSP_FONT_SRC = ["'self'", "https://cdn.jsdelivr.net"]
+CSP_IMG_SRC = [
+    "'self'", 
+    "data:", 
+    "https:",
+    "blob:",  # For dynamically generated content
+]
+CSP_FONT_SRC = ["'self'", "https://cdn.jsdelivr.net", "data:"]  # Allow data: fonts
 CSP_CONNECT_SRC = ["'self'", "https:"]
+# Allow data: URLs for all content types that might use SVG data URLs
+CSP_OBJECT_SRC = ["'none'"]  # Prevent object/embed/applet
+CSP_BASE_URI = ["'self'"]  # Prevent base tag hijacking
 
 # HTTPS Transport Security (only in production)
 if not DEBUG:
