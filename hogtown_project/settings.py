@@ -10,9 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import logging
 import os
 from pathlib import Path
-import logging
 
 import dj_database_url
 from dotenv import load_dotenv
@@ -185,7 +185,10 @@ EMAIL_SERVICE_ACCESS_KEY_ID = os.getenv("EMAIL_SERVICE_ACCESS_KEY_ID")
 EMAIL_SERVICE_SECRET_ACCESS_KEY = os.getenv("EMAIL_SERVICE_SECRET_ACCESS_KEY")
 EMAIL_SERVICE_AWS_REGION = os.getenv("EMAIL_SERVICE_AWS_REGION", "us-east-1")
 
-if EMAIL_SERVICE_ACCESS_KEY_ID and EMAIL_BACKEND == "anymail.backends.amazon_ses.EmailBackend":
+if (
+    EMAIL_SERVICE_ACCESS_KEY_ID
+    and EMAIL_BACKEND == "anymail.backends.amazon_ses.EmailBackend"
+):
     ANYMAIL = {
         "AMAZON_SES_ACCESS_KEY_ID": EMAIL_SERVICE_ACCESS_KEY_ID,
         "AMAZON_SES_SECRET_ACCESS_KEY": EMAIL_SERVICE_SECRET_ACCESS_KEY,
@@ -194,60 +197,64 @@ if EMAIL_SERVICE_ACCESS_KEY_ID and EMAIL_BACKEND == "anymail.backends.amazon_ses
 
 # Logging configuration for CloudWatch visibility
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'detailed': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "detailed": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
         },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'detailed',
-        },
-        'error_console': {
-            'level': 'ERROR',
-            'class': 'logging.StreamHandler',
-            'formatter': 'detailed',
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "detailed",
         },
-        'django.request': {
-            'handlers': ['error_console'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
-        'core': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
+        "error_console": {
+            "level": "ERROR",
+            "class": "logging.StreamHandler",
+            "formatter": "detailed",
         },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "django.request": {
+            "handlers": ["error_console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "core": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
     },
 }
 
 # Debug logging for startup configuration
-startup_logger = logging.getLogger('django.startup')
+startup_logger = logging.getLogger("django.startup")
 startup_logger.info("=== DJANGO STARTUP DEBUG ===")
 startup_logger.info(f"DEBUG mode: {DEBUG}")
 startup_logger.info(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
-startup_logger.info(f"DATABASE_URL env var: {'SET' if os.getenv('DATABASE_URL') else 'NOT SET'}")
+startup_logger.info(
+    f"DATABASE_URL env var: {'SET' if os.getenv('DATABASE_URL') else 'NOT SET'}"
+)
 startup_logger.info(f"DB_HOST env var: {'SET' if os.getenv('DB_HOST') else 'NOT SET'}")
-startup_logger.info(f"SECRET_KEY env var: {'SET' if os.getenv('SECRET_KEY') else 'NOT SET'}")
+startup_logger.info(
+    f"SECRET_KEY env var: {'SET' if os.getenv('SECRET_KEY') else 'NOT SET'}"
+)
 startup_logger.info(f"Database engine: {DATABASES['default']['ENGINE']}")
 startup_logger.info("=== END STARTUP DEBUG ===")
