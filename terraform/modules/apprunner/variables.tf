@@ -59,11 +59,11 @@ variable "cpu" {
   description = "CPU units for the App Runner service"
   type        = string
   default     = "0.25 vCPU"
-  
+
   validation {
     condition = contains([
       "0.25 vCPU",
-      "0.5 vCPU", 
+      "0.5 vCPU",
       "1 vCPU",
       "2 vCPU",
       "4 vCPU"
@@ -76,12 +76,12 @@ variable "memory" {
   description = "Memory for the App Runner service"
   type        = string
   default     = "0.5 GB"
-  
+
   validation {
     condition = contains([
       "0.5 GB",
       "1 GB",
-      "2 GB", 
+      "2 GB",
       "3 GB",
       "4 GB",
       "6 GB",

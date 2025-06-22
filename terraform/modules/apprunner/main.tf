@@ -133,8 +133,8 @@ resource "aws_iam_policy" "secrets_access" {
 
 # Policy for accessing ECR when using container deployment
 resource "aws_iam_policy" "ecr_access" {
-  count = var.ecr_repository_url != "" ? 1 : 0
-  name  = "${var.app_name}-ecr-access"
+  count       = var.ecr_repository_url != "" ? 1 : 0
+  name        = "${var.app_name}-ecr-access"
   description = "Allow App Runner to pull images from ECR"
 
   policy = jsonencode({
@@ -206,26 +206,26 @@ resource "aws_apprunner_service" "main" {
 
   source_configuration {
     auto_deployments_enabled = var.auto_deploy_enabled
-    
+
     # Authentication configuration for ECR access
     authentication_configuration {
       access_role_arn = aws_iam_role.apprunner_build_role.arn
     }
-    
+
     # Use ECR image repository for deployment
     image_repository {
       image_identifier      = "${var.ecr_repository_url}:${var.image_tag}"
       image_repository_type = "ECR"
-      
+
       image_configuration {
         port = "8000"
         runtime_environment_variables = merge({
           DJANGO_SETTINGS_MODULE = "hogtown_project.settings"
           DEBUG                  = "False"
-          EMAIL_BACKEND         = "anymail.backends.amazon_ses.EmailBackend"
-          ALLOWED_HOSTS         = "*"
+          EMAIL_BACKEND          = "anymail.backends.amazon_ses.EmailBackend"
+          ALLOWED_HOSTS          = "*"
         }, var.additional_env_vars)
-        
+
         runtime_environment_secrets = merge(
           # Database connection string from database secret
           var.database_secret_arn != "" ? {
@@ -238,13 +238,13 @@ resource "aws_apprunner_service" "main" {
           } : {},
           # Application secrets from central secret store
           var.app_secrets_arn != "" ? {
-            SECRET_KEY            = "${var.app_secrets_arn}:SECRET_KEY::"
-            PROSOPO_SITE_KEY     = "${var.app_secrets_arn}:PROSOPO_SITE_KEY::"
-            PROSOPO_SECRET_KEY   = "${var.app_secrets_arn}:PROSOPO_SECRET_KEY::"
-            EMAIL_SERVICE_ACCESS_KEY_ID    = "${var.app_secrets_arn}:EMAIL_SERVICE_ACCESS_KEY_ID::"
+            SECRET_KEY                      = "${var.app_secrets_arn}:SECRET_KEY::"
+            PROSOPO_SITE_KEY                = "${var.app_secrets_arn}:PROSOPO_SITE_KEY::"
+            PROSOPO_SECRET_KEY              = "${var.app_secrets_arn}:PROSOPO_SECRET_KEY::"
+            EMAIL_SERVICE_ACCESS_KEY_ID     = "${var.app_secrets_arn}:EMAIL_SERVICE_ACCESS_KEY_ID::"
             EMAIL_SERVICE_SECRET_ACCESS_KEY = "${var.app_secrets_arn}:EMAIL_SERVICE_SECRET_ACCESS_KEY::"
-            EMAIL_SERVICE_AWS_REGION       = "${var.app_secrets_arn}:AWS_REGION::"
-            DEFAULT_FROM_EMAIL   = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL::"
+            EMAIL_SERVICE_AWS_REGION        = "${var.app_secrets_arn}:AWS_REGION::"
+            DEFAULT_FROM_EMAIL              = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL::"
           } : {}
         )
       }
@@ -279,7 +279,7 @@ resource "aws_apprunner_service" "main" {
 
   # Observability configuration
   observability_configuration {
-    observability_enabled   = var.observability_enabled
+    observability_enabled           = var.observability_enabled
     observability_configuration_arn = var.observability_configuration_arn
   }
 
@@ -326,7 +326,7 @@ resource "aws_route53_record" "certificate_validation" {
   for_each = var.custom_domain_name != "" && var.hosted_zone_id != "" ? {
     for cert in aws_apprunner_custom_domain_association.main[0].certificate_validation_records : cert.name => cert
   } : {}
-  
+
   zone_id = var.hosted_zone_id
   name    = each.value.name
   type    = each.value.type
