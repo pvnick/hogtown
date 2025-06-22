@@ -7,5 +7,5 @@ output "environment_database_secrets" {
 
 output "environment_database_names" {
   description = "List of created environment database names"
-  value = var.environment_databases
+  value       = var.environment_databases
 }

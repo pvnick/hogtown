@@ -30,12 +30,12 @@ output "secrets_manager_arn" {
 
 output "lambda_function_arn" {
   description = "ARN of the database setup Lambda function"
-  value = aws_lambda_function.db_setup.arn
+  value       = aws_lambda_function.db_setup.arn
 }
 
 output "lambda_function_name" {
   description = "Name of the database setup Lambda function"
-  value = aws_lambda_function.db_setup.function_name
+  value       = aws_lambda_function.db_setup.function_name
 }
 
 output "lambda_security_group_id" {

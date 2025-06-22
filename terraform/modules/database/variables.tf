@@ -36,9 +36,9 @@ variable "postgres_version" {
   description = "PostgreSQL version - Note: RDS auto minor version upgrade is enabled, so the actual running version may be newer than specified here. The lifecycle rule ignores engine_version changes to prevent Terraform from attempting downgrades."
   type        = string
   default     = "17.4"
-  
+
   validation {
-    condition = can(regex("^(11|12|13|14|15|16|17)\\.[0-9]+$", var.postgres_version))
+    condition     = can(regex("^(11|12|13|14|15|16|17)\\.[0-9]+$", var.postgres_version))
     error_message = "PostgreSQL version must be in format 'X.Y' where X is between 11-17."
   }
 }
@@ -89,9 +89,9 @@ variable "backup_window" {
   description = "Backup window"
   type        = string
   default     = "03:00-04:00"
-  
+
   validation {
-    condition = can(regex("^([0-1][0-9]|2[0-3]):[0-5][0-9]-([0-1][0-9]|2[0-3]):[0-5][0-9]$", var.backup_window))
+    condition     = can(regex("^([0-1][0-9]|2[0-3]):[0-5][0-9]-([0-1][0-9]|2[0-3]):[0-5][0-9]$", var.backup_window))
     error_message = "Backup window must be in format 'HH:MM-HH:MM' (24-hour format)."
   }
 }
@@ -100,9 +100,9 @@ variable "maintenance_window" {
   description = "Maintenance window"
   type        = string
   default     = "sun:04:00-sun:05:00"
-  
+
   validation {
-    condition = can(regex("^(sun|mon|tue|wed|thu|fri|sat):([0-1][0-9]|2[0-3]):[0-5][0-9]-(sun|mon|tue|wed|thu|fri|sat):([0-1][0-9]|2[0-3]):[0-5][0-9]$", var.maintenance_window))
+    condition     = can(regex("^(sun|mon|tue|wed|thu|fri|sat):([0-1][0-9]|2[0-3]):[0-5][0-9]-(sun|mon|tue|wed|thu|fri|sat):([0-1][0-9]|2[0-3]):[0-5][0-9]$", var.maintenance_window))
     error_message = "Maintenance window must be in format 'ddd:HH:MM-ddd:HH:MM' where ddd is day of week (sun-sat)."
   }
 }
@@ -111,9 +111,9 @@ variable "monitoring_interval" {
   description = "Enhanced monitoring interval (0, 1, 5, 10, 15, 30, 60)"
   type        = number
   default     = 0
-  
+
   validation {
-    condition = contains([0, 1, 5, 10, 15, 30, 60], var.monitoring_interval)
+    condition     = contains([0, 1, 5, 10, 15, 30, 60], var.monitoring_interval)
     error_message = "Monitoring interval must be one of: 0, 1, 5, 10, 15, 30, 60 seconds."
   }
 }

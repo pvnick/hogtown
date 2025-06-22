@@ -84,23 +84,23 @@ resource "aws_subnet" "lambda_private" {
 # Shared database infrastructure
 module "database" {
   source = "../modules/database"
-  
-  project_name               = local.config.project_name
-  vpc_id                    = aws_vpc.main.id
-  database_subnet_ids       = aws_subnet.rds_private[*].id
-  availability_zones        = local.config.availability_zones != [] ? local.config.availability_zones : [for subnet in aws_subnet.rds_private : subnet.availability_zone]
-  allowed_cidr_blocks       = aws_subnet.apprunner_private[*].cidr_block
-  postgres_version          = local.config.postgres_version
-  db_instance_class         = local.config.db_instance_class
-  db_allocated_storage      = local.config.db_allocated_storage
-  db_max_allocated_storage  = local.config.db_max_allocated_storage
-  multi_az                  = local.config.multi_az
-  backup_retention_period   = local.config.backup_retention_period
-  monitoring_interval       = local.config.monitoring_interval
+
+  project_name                 = local.config.project_name
+  vpc_id                       = aws_vpc.main.id
+  database_subnet_ids          = aws_subnet.rds_private[*].id
+  availability_zones           = local.config.availability_zones != [] ? local.config.availability_zones : [for subnet in aws_subnet.rds_private : subnet.availability_zone]
+  allowed_cidr_blocks          = aws_subnet.apprunner_private[*].cidr_block
+  postgres_version             = local.config.postgres_version
+  db_instance_class            = local.config.db_instance_class
+  db_allocated_storage         = local.config.db_allocated_storage
+  db_max_allocated_storage     = local.config.db_max_allocated_storage
+  multi_az                     = local.config.multi_az
+  backup_retention_period      = local.config.backup_retention_period
+  monitoring_interval          = local.config.monitoring_interval
   performance_insights_enabled = local.config.performance_insights_enabled
-  deletion_protection       = local.config.deletion_protection
-  skip_final_snapshot      = local.config.skip_final_snapshot
-  lambda_subnet_ids        = aws_subnet.lambda_private[*].id
+  deletion_protection          = local.config.deletion_protection
+  skip_final_snapshot          = local.config.skip_final_snapshot
+  lambda_subnet_ids            = aws_subnet.lambda_private[*].id
 }
 
 # VPC Endpoints for Lambda to access AWS services without internet
@@ -268,21 +268,21 @@ resource "aws_secretsmanager_secret_version" "django_app_config" {
   secret_id = aws_secretsmanager_secret.django_app_config.id
   secret_string = jsonencode({
     # Django application secrets
-    SECRET_KEY           = random_password.django_secret_key.result
-    PROSOPO_SITE_KEY    = local.config.prosopo_site_key
-    PROSOPO_SECRET_KEY  = local.config.prosopo_secret_key
-    
+    SECRET_KEY         = random_password.django_secret_key.result
+    PROSOPO_SITE_KEY   = local.config.prosopo_site_key
+    PROSOPO_SECRET_KEY = local.config.prosopo_secret_key
+
     # Email service credentials (auto-generated)
     EMAIL_SERVICE_ACCESS_KEY_ID     = aws_iam_access_key.email_service_access_key.id
     EMAIL_SERVICE_SECRET_ACCESS_KEY = aws_iam_access_key.email_service_access_key.secret
-    AWS_REGION           = local.config.aws_region
-    DEFAULT_FROM_EMAIL   = local.config.default_from_email
-    ALLOWED_HOSTS        = local.config.allowed_hosts
-    
+    AWS_REGION                      = local.config.aws_region
+    DEFAULT_FROM_EMAIL              = local.config.default_from_email
+    ALLOWED_HOSTS                   = local.config.allowed_hosts
+
     # Database connection details
-    DB_HOST     = module.database.database_endpoint
-    DB_PORT     = tostring(module.database.database_port)
-    DB_NAME     = module.database.database_name
+    DB_HOST = module.database.database_endpoint
+    DB_PORT = tostring(module.database.database_port)
+    DB_NAME = module.database.database_name
   })
 
   lifecycle {

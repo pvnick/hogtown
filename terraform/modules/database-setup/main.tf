@@ -20,11 +20,11 @@ resource "null_resource" "invoke_db_setup" {
         ${var.aws_profile != "" ? "--profile ${var.aws_profile}" : ""} \
         --function-name ${var.lambda_function_name} \
         --payload '${jsonencode({
-          action = "create_database"
-          rds_secret_arn = var.rds_secrets_manager_arn
-          project_name = var.project_name
-          environment_databases = var.environment_databases
-        })}' \
+    action                = "create_database"
+    rds_secret_arn        = var.rds_secrets_manager_arn
+    project_name          = var.project_name
+    environment_databases = var.environment_databases
+})}' \
         --cli-binary-format raw-in-base64-out \
         response.json
       
@@ -44,13 +44,13 @@ resource "null_resource" "invoke_db_setup" {
       cat response.json
       rm -f response.json
     EOT
-  }
+}
 }
 
 # Data source to get the created secret ARNs
 data "aws_secretsmanager_secret" "env_db_secrets" {
   for_each = toset(var.environment_databases)
   name     = "${var.project_name}/database/${each.value}"
-  
+
   depends_on = [null_resource.invoke_db_setup]
 }

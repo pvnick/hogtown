@@ -110,9 +110,9 @@ resource "aws_iam_role_policy" "lambda_db_setup" {
         Resource = [
           # Allow access to custom RDS KMS key if specified
           var.kms_key_id != ""
-            ? var.kms_key_id
-            # Otherwise allow access to default AWS managed RDS KMS key
-            : "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:alias/aws/rds",
+          ? var.kms_key_id
+          # Otherwise allow access to default AWS managed RDS KMS key
+          : "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:alias/aws/rds",
           # Allow access to AWS managed Lambda KMS key
           "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:alias/aws/lambda",
           # Allow access to Secrets Manager KMS key  
@@ -145,10 +145,10 @@ resource "aws_lambda_layer_version" "psycopg2" {
 resource "aws_lambda_function" "db_setup" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "${var.project_name}-db-setup"
-  role            = aws_iam_role.lambda_db_setup.arn
-  handler         = "lambda_function.lambda_handler"
-  runtime         = "python3.11"
-  timeout         = 300
+  role             = aws_iam_role.lambda_db_setup.arn
+  handler          = "lambda_function.lambda_handler"
+  runtime          = "python3.11"
+  timeout          = 300
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
   layers = [aws_lambda_layer_version.psycopg2.arn]

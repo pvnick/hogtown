@@ -71,20 +71,20 @@ resource "aws_db_instance" "postgres" {
   storage_type          = "gp3"
   storage_encrypted     = true
   # Use a custom KMS key if provided, otherwise use the AWS managed key
-  kms_key_id           = var.kms_key_id != "" ? var.kms_key_id : null
+  kms_key_id = var.kms_key_id != "" ? var.kms_key_id : null
 
   # Production settings
-  multi_az               = var.multi_az
-  publicly_accessible    = false
+  multi_az                = var.multi_az
+  publicly_accessible     = false
   backup_retention_period = var.backup_retention_period
-  backup_window          = var.backup_window
-  maintenance_window     = var.maintenance_window
-  
+  backup_window           = var.backup_window
+  maintenance_window      = var.maintenance_window
+
   # Monitoring
   monitoring_interval = var.monitoring_interval
   monitoring_role_arn = var.monitoring_interval > 0 ? aws_iam_role.rds_enhanced_monitoring[0].arn : null
-  
-  performance_insights_enabled = var.performance_insights_enabled
+
+  performance_insights_enabled    = var.performance_insights_enabled
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
   db_name  = var.master_db_name
@@ -93,7 +93,7 @@ resource "aws_db_instance" "postgres" {
 
   vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name   = aws_db_subnet_group.default.name
-  
+
   # Parameter group for optimization
   parameter_group_name = aws_db_parameter_group.postgres.name
 
@@ -169,7 +169,7 @@ resource "aws_iam_role_policy_attachment" "rds_enhanced_monitoring" {
 resource "aws_secretsmanager_secret" "rds_master" {
   name        = "${var.project_name}/rds/master"
   description = "Master credentials for ${var.project_name} RDS instance"
-  
+
   tags = {
     Name    = "${var.project_name}-rds-master"
     Project = var.project_name
