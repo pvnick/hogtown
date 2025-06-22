@@ -137,6 +137,27 @@ This is a Django web application project called "hogtown_project" with a core ap
 - **Custom domain not working**: Allow 5-10 minutes for App Runner certificate validation
 - **SSL errors**: App Runner creates separate certificates that take time to validate
 
+## CI/CD Pipeline
+
+### Comprehensive Workflow
+- **Single optimized pipeline**: `ci-comprehensive.yml` handles all validation and deployment
+- **Smart conditional logic**: Terraform validation only runs when terraform files change
+- **Dependency-based deployment**: Docker images only build if all tests pass
+- **Efficient resource usage**: Eliminates duplicate jobs across workflows
+
+### Jobs Included
+1. **Django Tests**: Unit tests, migrations, coverage, security checks
+2. **Code Quality**: flake8 linting, black formatting, isort import sorting
+3. **Security Scanning**: bandit code analysis, safety dependency checks
+4. **Terraform Validation**: Format, init, and validate (when terraform changes detected)
+5. **Terraform Security**: Checkov and TFSec scanning (when terraform changes detected)
+6. **Docker Build & Deploy**: ECR push only on successful validation (push events only, not PRs)
+
+### Workflow Triggers
+- **Push to main/develop**: Full pipeline including Docker build
+- **Pull Request**: Validation only (no Docker build)
+- **Terraform changes**: Additional terraform validation jobs
+
 ## Terraform Guidelines
 - Whenever doing a terraform init make sure to look for the tfbackend files in terraform/config
 - Whenever you write terraform code, use context7
