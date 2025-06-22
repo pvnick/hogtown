@@ -169,3 +169,24 @@ output "ecr_push_access_key_id" {
   sensitive   = true
 }
 
+# Domain and Certificate Outputs
+output "domain_name" {
+  description = "The custom domain name"
+  value       = local.config.domain_name
+}
+
+output "hosted_zone_id" {
+  description = "The Route 53 hosted zone ID"
+  value       = aws_route53_zone.main.zone_id
+}
+
+output "hosted_zone_name_servers" {
+  description = "The Route 53 hosted zone name servers - point your domain registrar to these"
+  value       = aws_route53_zone.main.name_servers
+}
+
+output "ssl_certificate_arn" {
+  description = "The ARN of the validated SSL certificate"
+  value       = aws_acm_certificate_validation.main.certificate_arn
+}
+

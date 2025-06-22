@@ -28,5 +28,8 @@ skip_final_snapshot: false
 # Application secrets (optional - leave blank to use defaults)
 prosopo_site_key: "5EcHAuJuWAevsRezYfkXUtFQ1LE4iTk9sZkkeTynrf97W6Xf"
 prosopo_secret_key: "panther flavor blue negative verb horse note cave mirror deny omit obscure"
-default_from_email: "noreply@hogtowncatholic.org"
-allowed_hosts: ""
+default_from_email: "noreply@hogtowncatholic.com"
+allowed_hosts: "hogtowncatholic.com,staging.hogtowncatholic.com"
+
+# Domain configuration
+domain_name: "hogtowncatholic.com"

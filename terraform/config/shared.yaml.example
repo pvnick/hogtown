@@ -30,4 +30,7 @@ github_repository_url: "https://github.com/your-username/your-repo-name"
 prosopo_site_key: "your-prosopo-site-key"
 prosopo_secret_key: "your-prosopo-secret-key"
 default_from_email: "noreply@yourdomain.com"
-allowed_hosts: "yourdomain.com,www.yourdomain.com"
+allowed_hosts: "yourdomain.com,staging.yourdomain.com"
+
+# Domain configuration (required for custom domains)
+domain_name: "yourdomain.com"

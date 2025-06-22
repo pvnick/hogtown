@@ -45,9 +45,6 @@ module "prod_apprunner" {
   enable_vpc_connector       = true
   subnet_ids                 = data.terraform_remote_state.shared.outputs.apprunner_private_subnet_ids
   database_security_groups   = [data.terraform_remote_state.shared.outputs.database_security_group_id]
-  github_repository_url      = data.terraform_remote_state.shared.outputs.github_repository_url
-  github_branch              = local.config.prod_branch
-  github_connection_arn      = data.terraform_remote_state.shared.outputs.github_connection_arn
   ecr_repository_url         = data.terraform_remote_state.shared.outputs.ecr_repository_url
   image_tag                  = "latest"
   auto_deploy_enabled        = local.config.auto_deploy_enabled
@@ -66,4 +63,20 @@ module "prod_apprunner" {
   health_check_unhealthy_threshold = local.config.health_check_unhealthy_threshold
   health_check_interval      = local.config.health_check_interval
   health_check_timeout       = local.config.health_check_timeout
+  
+  # Custom domain configuration
+  custom_domain_name    = data.terraform_remote_state.shared.outputs.domain_name
+  ssl_certificate_arn   = data.terraform_remote_state.shared.outputs.ssl_certificate_arn
+  hosted_zone_id        = data.terraform_remote_state.shared.outputs.hosted_zone_id
+}
+
+# Outputs for DNS configuration
+output "production_dns_configuration" {
+  description = "DNS configuration required for production environment"
+  value = {
+    domain_name = module.prod_apprunner.custom_domain_name
+    record_type = "CNAME"
+    record_value = module.prod_apprunner.dns_target
+    instructions = "Create a CNAME record in your external DNS provider with the above values"
+  }
 }

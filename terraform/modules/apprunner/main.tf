@@ -301,3 +301,37 @@ resource "aws_cloudwatch_log_group" "apprunner" {
     Project     = var.project_name
   }
 }
+
+# Custom Domain Association (if domain is provided)
+resource "aws_apprunner_custom_domain_association" "main" {
+  count       = var.custom_domain_name != "" ? 1 : 0
+  domain_name = var.custom_domain_name
+  service_arn = aws_apprunner_service.main.arn
+}
+
+# DNS records for custom domain (if domain is provided)
+resource "aws_route53_record" "custom_domain" {
+  count   = var.custom_domain_name != "" && var.hosted_zone_id != "" ? 1 : 0
+  zone_id = var.hosted_zone_id
+  name    = var.custom_domain_name
+  type    = "CNAME"
+  ttl     = 300
+  records = [aws_apprunner_custom_domain_association.main[0].dns_target]
+
+  depends_on = [aws_apprunner_custom_domain_association.main]
+}
+
+# DNS records for App Runner certificate validation
+resource "aws_route53_record" "certificate_validation" {
+  for_each = var.custom_domain_name != "" && var.hosted_zone_id != "" ? {
+    for cert in aws_apprunner_custom_domain_association.main[0].certificate_validation_records : cert.name => cert
+  } : {}
+  
+  zone_id = var.hosted_zone_id
+  name    = each.value.name
+  type    = each.value.type
+  ttl     = 300
+  records = [each.value.value]
+
+  depends_on = [aws_apprunner_custom_domain_association.main]
+}

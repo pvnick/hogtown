@@ -179,3 +179,22 @@ variable "log_retention_days" {
   type        = number
   default     = 14
 }
+
+# Custom domain configuration
+variable "custom_domain_name" {
+  description = "Custom domain name for the App Runner service (e.g., hogtowncatholic.com or staging.hogtowncatholic.com)"
+  type        = string
+  default     = ""
+}
+
+variable "ssl_certificate_arn" {
+  description = "ARN of the SSL certificate for the custom domain"
+  type        = string
+  default     = ""
+}
+
+variable "hosted_zone_id" {
+  description = "Route 53 hosted zone ID for the custom domain"
+  type        = string
+  default     = ""
+}

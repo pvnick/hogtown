@@ -9,6 +9,7 @@ A Django web application for managing Catholic parishes, ministries, and events 
 - **Ministry Portal**: Manage ministry profiles and events (ad-hoc and recurring)
 - **Event Calendar**: Interactive calendar with filtering capabilities
 - **Admin Dashboard**: Approve/reject registrations and manage core data
+- **Custom Domain**: Production at `hogtowncatholic.com`, staging at `staging.hogtowncatholic.com`
 
 ## Technology Stack
 
@@ -17,7 +18,7 @@ A Django web application for managing Catholic parishes, ministries, and events 
 - **Email**: AWS SES integration via django-anymail (migrated from Brevo)
 - **CAPTCHA**: Prosopo Procaptcha for bot protection
 - **Authentication**: Custom approval-based authentication system
-- **Infrastructure**: AWS App Runner, RDS, SES, Secrets Manager
+- **Infrastructure**: AWS App Runner, RDS, SES, Secrets Manager, Route 53, ACM
 
 ## Development Setup
 
@@ -178,7 +179,9 @@ The project includes production-ready Terraform configurations for deploying to 
 ### Architecture Overview
 
 - **Multi-Environment**: Separate staging and production environments with isolated state
+- **Custom Domains**: Production (`hogtowncatholic.com`) and staging (`staging.hogtowncatholic.com`) with SSL
 - **Shared Database**: Single RDS PostgreSQL 17.2 instance with environment-specific databases
+- **DNS & SSL**: ACM wildcard certificate with EMAIL validation for HTTPS (domain managed externally)
 - **Security**: VPC connectors, restricted security groups, AWS Secrets Manager integration
 - **Monitoring**: CloudWatch logs, Performance Insights, optional X-Ray tracing
 
@@ -355,6 +358,30 @@ aws dynamodb create-table \
    terraform init -backend-config-file=../../config/prod.tfbackend
    terraform apply
    ```
+
+4. **Configure SSL certificate and DNS**:
+   
+   **SSL Certificate Validation**:
+   - Check your email for validation messages from AWS Certificate Manager
+   - Validation emails are sent to standard admin addresses (admin@, administrator@, webmaster@, postmaster@, hostmaster@)
+   - Click the validation link in the email to approve the certificate
+
+   **DNS Configuration** (after environments are deployed):
+   ```bash
+   # Get the DNS targets for your domain from Terraform outputs
+   cd terraform/environments/staging
+   terraform output staging_dns_configuration
+   
+   cd terraform/environments/prod
+   terraform output production_dns_configuration
+   ```
+   
+   **Configure your external DNS provider**:
+   - Create CNAME records as shown in the Terraform outputs
+   - Production: `hogtowncatholic.com` → App Runner DNS target
+   - Staging: `staging.hogtowncatholic.com` → App Runner DNS target
+
+**Important**: The domain must be registered and DNS managed outside of AWS. After deploying the environments, you must create the CNAME records in your external DNS provider (e.g., your domain registrar) using the values from the Terraform outputs.
 
 ### Key Features
 

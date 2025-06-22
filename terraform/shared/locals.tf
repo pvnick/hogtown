@@ -30,5 +30,8 @@ locals {
     prosopo_secret_key = local.raw_config.prosopo_secret_key
     default_from_email = local.raw_config.default_from_email
     allowed_hosts      = local.raw_config.allowed_hosts
+    
+    # Domain configuration
+    domain_name        = try(local.raw_config.domain_name, "hogtowncatholic.com")
   }
 }

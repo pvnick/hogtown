@@ -66,4 +66,20 @@ module "staging_apprunner" {
   health_check_unhealthy_threshold = local.config.health_check_unhealthy_threshold
   health_check_interval      = local.config.health_check_interval
   health_check_timeout       = local.config.health_check_timeout
+  
+  # Custom domain configuration
+  custom_domain_name    = "staging.${data.terraform_remote_state.shared.outputs.domain_name}"
+  ssl_certificate_arn   = data.terraform_remote_state.shared.outputs.ssl_certificate_arn
+  hosted_zone_id        = data.terraform_remote_state.shared.outputs.hosted_zone_id
+}
+
+# Outputs for DNS configuration
+output "staging_dns_configuration" {
+  description = "DNS configuration required for staging environment"
+  value = {
+    domain_name = module.staging_apprunner.custom_domain_name
+    record_type = "CNAME"
+    record_value = module.staging_apprunner.dns_target
+    instructions = "Create a CNAME record in your external DNS provider with the above values"
+  }
 }

@@ -32,3 +32,24 @@ output "log_group_name" {
   description = "The CloudWatch log group name"
   value       = aws_cloudwatch_log_group.apprunner.name
 }
+
+# Custom domain outputs
+output "custom_domain_name" {
+  description = "The custom domain name (if configured)"
+  value       = var.custom_domain_name != "" ? var.custom_domain_name : null
+}
+
+output "custom_domain_url" {
+  description = "The custom domain URL (if configured)"
+  value       = var.custom_domain_name != "" ? "https://${var.custom_domain_name}" : null
+}
+
+output "custom_domain_association_status" {
+  description = "The status of the custom domain association (if configured)"
+  value       = var.custom_domain_name != "" ? aws_apprunner_custom_domain_association.main[0].status : null
+}
+
+output "dns_target" {
+  description = "The DNS target for CNAME record (if custom domain is configured)"
+  value       = var.custom_domain_name != "" ? aws_apprunner_custom_domain_association.main[0].dns_target : null
+}

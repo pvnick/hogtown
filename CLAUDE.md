@@ -57,6 +57,102 @@ This is a Django web application project called "hogtown_project" with a core ap
 - Main app is called "core" - add new features here or create additional apps as needed
 - Email service uses AWS SES (migrated from Brevo/Sendinblue)
 
+## Custom Domain Configuration
+
+### Domain Setup
+- **Production**: `hogtowncatholic.com` → Production App Runner service
+- **Staging**: `staging.hogtowncatholic.com` → Staging App Runner service
+- Domain registered externally but DNS managed by AWS Route 53
+- SSL certificate from ACM uses DNS validation
+- Wildcard certificate covers both main domain and subdomains (*.hogtowncatholic.com)
+- App Runner creates separate certificates for custom domains with automatic validation
+
+### DNS Configuration Steps
+1. **Deploy Shared Infrastructure**: Creates Route 53 hosted zone and ACM certificate
+2. **Get Route 53 Nameservers**: Run `terraform output hosted_zone_name_servers` in shared directory
+3. **Update Domain Registrar**: Point domain to Route 53 nameservers from step 2
+4. **Deploy Environment Infrastructure**: Creates App Runner services with custom domains
+5. **Automatic Certificate Validation**: App Runner certificates validated via DNS automatically
+
+### DNS Records Created Automatically
+- ACM certificate validation records (for shared SSL certificate)
+- App Runner certificate validation records (for custom domain certificates)
+- CNAME records pointing custom domains to App Runner DNS targets
+
+### Email Configuration
+- Default sender: `noreply@hogtowncatholic.com`
+- SES domain identity configured for hogtowncatholic.com
+- ALLOWED_HOSTS includes both production and staging domains
+
+## Infrastructure Architecture
+
+### Shared Resources (`terraform/shared/`)
+- Route 53 hosted zone and SSL certificate
+- VPC with private subnets for RDS, App Runner, and Lambda
+- ECR repository for Docker images
+- RDS PostgreSQL database with automated setup
+- Secrets Manager for application configuration
+- IAM users and policies for email service and ECR access
+
+### Environment-Specific Resources
+- **Staging** (`terraform/environments/staging/`): App Runner service with staging subdomain
+- **Production** (`terraform/environments/prod/`): App Runner service with main domain
+- Environment-specific databases and configuration
+
+### Deployment Flow
+1. **Shared Infrastructure**: Apply first to create base resources
+   ```bash
+   cd terraform/shared
+   terraform init -backend-config=../config/shared.tfbackend
+   terraform plan
+   terraform apply
+   ```
+
+2. **Domain Delegation**: Update registrar to use Route 53 name servers
+   ```bash
+   terraform output hosted_zone_name_servers
+   # Copy nameservers to domain registrar DNS settings
+   ```
+
+3. **Environment Infrastructure**: Apply staging and production environments
+   ```bash
+   # Staging
+   cd ../environments/staging
+   terraform init -backend-config=../../config/staging.tfbackend
+   terraform plan
+   terraform apply
+   
+   # Production (when ready)
+   cd ../prod
+   terraform init -backend-config=../../config/prod.tfbackend
+   terraform plan
+   terraform apply
+   ```
+
+4. **CI/CD**: GitHub Actions builds and pushes to ECR, App Runner auto-deploys
+
+### Troubleshooting Domain Setup
+- **Certificate validation pending**: Check that nameservers were updated at registrar
+- **Terraform state locks**: Use `terraform force-unlock <lock-id>` if needed
+- **Custom domain not working**: Allow 5-10 minutes for App Runner certificate validation
+- **SSL errors**: App Runner creates separate certificates that take time to validate
+
 ## Terraform Guidelines
 - Whenever doing a terraform init make sure to look for the tfbackend files in terraform/config
 - Whenever you write terraform code, use context7
+- Apply shared infrastructure first, then environment-specific resources
+- Domain configuration is centralized in shared infrastructure
+- Use AWS profile `hogtown` for all AWS CLI commands
+- Terraform backend files are located in `terraform/config/`
+
+### Key Configuration Changes Made
+1. **Route 53 Integration**: Added Route 53 hosted zone for DNS management with external domain registration
+2. **SSL Certificate**: Changed from EMAIL to DNS validation for automatic validation
+3. **App Runner Custom Domains**: Added automatic certificate validation record creation in DNS
+4. **Dual Certificate Setup**: ACM certificate for shared resources + App Runner certificates for custom domains
+
+### Current Status
+- **Shared Infrastructure**: ✅ Deployed with Route 53 hosted zone and SSL certificate
+- **Staging Environment**: ✅ Deployed with custom domain `staging.hogtowncatholic.com`
+- **Production Environment**: ⏸️ Ready to deploy (skipped per user request)
+- **Domain Nameservers**: ✅ Updated at registrar to point to Route 53
