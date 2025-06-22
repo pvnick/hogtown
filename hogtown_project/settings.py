@@ -158,7 +158,12 @@ LOGIN_REDIRECT_URL = "/portal/"
 LOGOUT_REDIRECT_URL = "/"
 
 # Security settings for HTTPS
-SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False").lower() in ("true", "1", "yes", "on")
+SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False").lower() in (
+    "true",
+    "1",
+    "yes",
+    "on",
+)
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
