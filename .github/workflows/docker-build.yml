@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - main
+      - develop
 
 env:
   AWS_REGION: us-east-1
