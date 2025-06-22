@@ -49,11 +49,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "anymail",
+    "csp",
     "core",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "csp.middleware.CSPMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -155,6 +157,35 @@ LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/portal/"
 LOGOUT_REDIRECT_URL = "/"
 
+# Security settings for HTTPS
+SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False").lower() in ("true", "1", "yes", "on")
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = "DENY"
+
+# Content Security Policy to prevent mixed content
+CSP_DEFAULT_SRC = ["'self'"]
+CSP_SCRIPT_SRC = [
+    "'self'",
+    "https://cdn.jsdelivr.net",
+    "https://js.prosopo.io",
+    "'unsafe-inline'",  # Needed for inline scripts
+]
+CSP_STYLE_SRC = [
+    "'self'",
+    "https://cdn.jsdelivr.net",
+    "'unsafe-inline'",  # Needed for inline styles
+]
+CSP_IMG_SRC = ["'self'", "data:", "https:"]
+CSP_FONT_SRC = ["'self'", "https://cdn.jsdelivr.net"]
+CSP_CONNECT_SRC = ["'self'", "https:"]
+
+# HTTPS Transport Security (only in production)
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -178,7 +209,7 @@ PROSOPO_VERIFY_URL = os.getenv(
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
 )
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@hogtowncatholic.org")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@hogtowncatholic.com")
 
 # Email service credentials (AWS SES)
 EMAIL_SERVICE_ACCESS_KEY_ID = os.getenv("EMAIL_SERVICE_ACCESS_KEY_ID")
