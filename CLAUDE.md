@@ -177,3 +177,67 @@ This is a Django web application project called "hogtown_project" with a core ap
 - **Staging Environment**: ✅ Deployed with custom domain `staging.hogtowncatholic.com`
 - **Production Environment**: ⏸️ Ready to deploy (skipped per user request)
 - **Domain Nameservers**: ✅ Updated at registrar to point to Route 53
+- **SSL Security**: ✅ Mixed content warnings fixed with CSP headers
+
+## SSL/HTTPS Security & Mixed Content Resolution
+
+### Problem & Solution
+**Issue**: Browser mixed content warnings despite valid SSL certificates
+**Root Cause**: Missing Content Security Policy (CSP) headers
+**Solution**: Added django-csp package with strict HTTPS-only policies
+
+### Security Configuration Added
+```python
+# requirements.txt
+django-csp==3.8
+
+# settings.py
+INSTALLED_APPS = [..., "csp", ...]
+MIDDLEWARE = [..., "csp.middleware.CSPMiddleware", ...]
+
+# Content Security Policy to prevent mixed content
+CSP_DEFAULT_SRC = ["'self'"]
+CSP_SCRIPT_SRC = ["'self'", "https://cdn.jsdelivr.net", "https://js.prosopo.io", "'unsafe-inline'"]
+CSP_STYLE_SRC = ["'self'", "https://cdn.jsdelivr.net", "'unsafe-inline'"]
+CSP_IMG_SRC = ["'self'", "data:", "https:"]
+CSP_FONT_SRC = ["'self'", "https://cdn.jsdelivr.net"]
+CSP_CONNECT_SRC = ["'self'", "https:"]
+
+# HTTPS Transport Security (production only)
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# Additional security headers
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = "DENY"
+```
+
+### Key Learning
+Modern browsers require explicit CSP headers to prevent mixed content warnings, not just valid SSL certificates. The django-csp package provides comprehensive protection against HTTP resource loading on HTTPS sites.
+
+## Infrastructure Patterns & Best Practices
+
+### Terraform Configuration Patterns
+- **Backend Files**: Always use `.tfbackend` files in `terraform/config/`
+- **AWS Profile**: Use `hogtown` profile for all AWS CLI commands
+- **State Locks**: Use `terraform force-unlock <lock-id>` when needed
+- **Deployment Order**: Shared infrastructure → environment-specific resources
+
+### Debugging & Troubleshooting
+#### SSL Issues
+1. **Check CSP Headers**: Use browser dev tools to verify Content-Security-Policy headers
+2. **App Runner Certificates**: Allow 5-10 minutes for validation after DNS changes
+3. **Mixed Content**: Look for CSP violations in browser console, not just certificate validity
+
+#### Terraform Issues
+- **State Locks**: Check for `.terraform.lock.hcl` and use force-unlock if needed
+- **Backend Config**: Always specify `-backend-config=../config/name.tfbackend`
+- **Validation Sequence**: fmt → init → validate → plan → apply
+
+#### Django Production Debugging
+- **CloudWatch Logs**: `/aws/apprunner/hogtown-staging/*/application`
+- **Comprehensive Logging**: Configured in settings.py with detailed formatters
+- **Health Check**: Separate endpoint without database dependencies
