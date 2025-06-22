@@ -57,6 +57,69 @@ This is a Django web application project called "hogtown_project" with a core ap
 - Main app is called "core" - add new features here or create additional apps as needed
 - Email service uses AWS SES (migrated from Brevo/Sendinblue)
 
+## Pre-Commit Checklist
+
+### Code Quality - ALWAYS Run Before Git Push
+**CRITICAL**: Always run black formatting on all Python files before pushing to git
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Format all Python files with black
+black .
+
+# Check import sorting
+isort --check-only --diff .
+# Fix imports if needed
+isort .
+
+# Run flake8 linting
+flake8 .
+
+# Run Django checks
+python manage.py check
+python manage.py check --deploy
+```
+
+### Why This Matters
+- The CI pipeline includes black formatting checks that will fail if code isn't properly formatted
+- Running black locally prevents CI failures and maintains code consistency
+- The project uses specific flake8 configuration in `.flake8` file
+- Django security checks help catch configuration issues
+
+### Django-Specific Commands
+```bash
+# Test the application
+python manage.py test
+
+# Check for missing migrations
+python manage.py makemigrations --dry-run --check
+
+# Collect static files (if needed)
+python manage.py collectstatic --noinput
+```
+
+### Git Workflow
+```bash
+# After running black and other checks
+git add .
+git commit -m "Your commit message"
+git push origin develop  # or main
+```
+
+### Code Style Configuration
+- Black: Default configuration (line length 88)
+- isort: Compatible with black
+- flake8: Custom configuration in `.flake8` with complexity exclusions
+- Django: Follow Django coding standards
+
+### Common Issues to Avoid
+- Forgetting to run black before commit (causes CI failures)
+- Not activating virtual environment before commands
+- Pushing without running Django checks
+- Missing import sorting with isort
+
 ## Custom Domain Configuration
 
 ### Domain Setup

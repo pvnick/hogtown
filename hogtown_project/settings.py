@@ -182,8 +182,8 @@ CSP_STYLE_SRC = [
     "'unsafe-inline'",  # Needed for inline styles and Bootstrap data: URLs
 ]
 CSP_IMG_SRC = [
-    "'self'", 
-    "data:", 
+    "'self'",
+    "data:",
     "https:",
     "blob:",  # For dynamically generated content
 ]
