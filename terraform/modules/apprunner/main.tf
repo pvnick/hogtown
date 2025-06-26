@@ -245,6 +245,13 @@ resource "aws_apprunner_service" "main" {
             EMAIL_SERVICE_SECRET_ACCESS_KEY = "${var.app_secrets_arn}:EMAIL_SERVICE_SECRET_ACCESS_KEY::"
             EMAIL_SERVICE_AWS_REGION        = "${var.app_secrets_arn}:AWS_REGION::"
             DEFAULT_FROM_EMAIL              = "${var.app_secrets_arn}:DEFAULT_FROM_EMAIL::"
+            # S3 static files configuration
+            USE_S3                          = "${var.app_secrets_arn}:USE_S3::"
+            AWS_STORAGE_BUCKET_NAME         = "${var.app_secrets_arn}:AWS_STORAGE_BUCKET_NAME::"
+            AWS_S3_ACCESS_KEY_ID            = "${var.app_secrets_arn}:AWS_S3_ACCESS_KEY_ID::"
+            AWS_S3_SECRET_ACCESS_KEY        = "${var.app_secrets_arn}:AWS_S3_SECRET_ACCESS_KEY::"
+            AWS_S3_CUSTOM_DOMAIN            = "${var.app_secrets_arn}:AWS_S3_CUSTOM_DOMAIN::"
+            AWS_CLOUDFRONT_DOMAIN           = "${var.app_secrets_arn}:AWS_CLOUDFRONT_DOMAIN::"
           } : {}
         )
       }

@@ -156,6 +156,9 @@ git push origin develop  # or main
 - RDS PostgreSQL database with automated setup
 - Secrets Manager for application configuration
 - IAM users and policies for email service and ECR access
+- S3 bucket for static files with versioning enabled
+- CloudFront CDN distribution for static file delivery
+- IAM user for Django S3 uploads with minimal permissions
 
 ### Environment-Specific Resources
 - **Staging** (`terraform/environments/staging/`): App Runner service with staging subdomain
@@ -234,6 +237,9 @@ git push origin develop  # or main
 2. **SSL Certificate**: Changed from EMAIL to DNS validation for automatic validation
 3. **App Runner Custom Domains**: Added automatic certificate validation record creation in DNS
 4. **Dual Certificate Setup**: ACM certificate for shared resources + App Runner certificates for custom domains
+5. **Static Files CDN**: Added S3 bucket and CloudFront distribution for static file serving
+6. **Django Storages**: Configured django-storages for S3 static file uploads
+7. **CloudFront Domain**: static.hogtowncatholic.com serves static assets globally
 
 ### Current Status
 - **Shared Infrastructure**: ✅ Deployed with Route 53 hosted zone and SSL certificate
@@ -304,3 +310,30 @@ Modern browsers require explicit CSP headers to prevent mixed content warnings, 
 - **CloudWatch Logs**: `/aws/apprunner/hogtown-staging/*/application`
 - **Comprehensive Logging**: Configured in settings.py with detailed formatters
 - **Health Check**: Separate endpoint without database dependencies
+
+## Static Files CDN Configuration
+
+### Production Static Files
+- **S3 Bucket**: `hogtown-static-files` (private, versioned)
+- **CloudFront CDN**: `static.hogtowncatholic.com`
+- **Django Storage**: `django-storages[s3]` with boto3
+- **Cache Headers**: 1 day for JS/CSS, 30 days for images
+- **CORS**: Configured for production and staging domains
+
+### Development Static Files
+- **Local Storage**: `staticfiles/` directory
+- **Served by Django**: `python manage.py runserver`
+- **Collection**: `python manage.py collectstatic`
+
+### Static File Upload Process
+1. Development: Files served locally from `core/static/`
+2. Production: 
+   - `collectstatic` uploads to S3 during deployment
+   - CloudFront serves files globally with caching
+   - Automatic invalidation not configured (manual if needed)
+
+### Environment Variables
+- `USE_S3`: Set to "True" in production environments
+- `AWS_STORAGE_BUCKET_NAME`: S3 bucket name
+- `AWS_CLOUDFRONT_DOMAIN`: Custom CloudFront domain
+- All credentials managed via AWS Secrets Manager

@@ -7,7 +7,8 @@ urlpatterns = [
     # Health check for App Runner
     path("health/", views.health_check, name="health_check"),
     # Public views
-    path("", views.parish_directory, name="parish_directory"),
+    path("", views.landing_page, name="landing_page"),
+    path("parishes/", views.parish_directory, name="parish_directory"),
     path("parish/<int:parish_id>/", views.parish_detail, name="parish_detail"),
     path("ministry/<int:ministry_id>/", views.ministry_detail, name="ministry_detail"),
     path("calendar/", views.event_calendar, name="event_calendar"),

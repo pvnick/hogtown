@@ -190,3 +190,50 @@ output "ssl_certificate_arn" {
   value       = aws_acm_certificate_validation.main.certificate_arn
 }
 
+# Static Files S3 and CloudFront Outputs
+output "static_files_bucket_name" {
+  description = "The name of the S3 bucket for static files"
+  value       = aws_s3_bucket.static_files.bucket
+}
+
+output "static_files_bucket_arn" {
+  description = "The ARN of the S3 bucket for static files"
+  value       = aws_s3_bucket.static_files.arn
+}
+
+output "cloudfront_distribution_id" {
+  description = "The ID of the CloudFront distribution"
+  value       = aws_cloudfront_distribution.static_files.id
+}
+
+output "cloudfront_distribution_domain_name" {
+  description = "The domain name of the CloudFront distribution"
+  value       = aws_cloudfront_distribution.static_files.domain_name
+}
+
+output "cloudfront_distribution_arn" {
+  description = "The ARN of the CloudFront distribution"
+  value       = aws_cloudfront_distribution.static_files.arn
+}
+
+output "static_files_cdn_url" {
+  description = "The CDN URL for static files"
+  value       = "https://static.${local.config.domain_name}"
+}
+
+output "django_s3_user_name" {
+  description = "The name of the Django S3 IAM user"
+  value       = aws_iam_user.django_s3_user.name
+}
+
+output "django_s3_user_arn" {
+  description = "The ARN of the Django S3 IAM user"
+  value       = aws_iam_user.django_s3_user.arn
+}
+
+output "django_s3_access_key_id" {
+  description = "The access key ID for Django S3 uploads (sensitive)"
+  value       = aws_iam_access_key.django_s3_access_key.id
+  sensitive   = true
+}
+

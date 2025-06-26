@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "anymail",
     "csp",
+    "storages",
     "core",
 ]
 
@@ -169,6 +170,9 @@ SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = "DENY"
 
 # Content Security Policy to prevent mixed content
+# Get CloudFront domain for CSP if using S3
+CLOUDFRONT_DOMAIN = os.getenv("AWS_CLOUDFRONT_DOMAIN", "")
+
 CSP_DEFAULT_SRC = ["'self'"]
 CSP_SCRIPT_SRC = [
     "'self'",
@@ -189,6 +193,13 @@ CSP_IMG_SRC = [
 ]
 CSP_FONT_SRC = ["'self'", "https://cdn.jsdelivr.net", "data:"]  # Allow data: fonts
 CSP_CONNECT_SRC = ["'self'", "https:"]
+
+# Add CloudFront domain to CSP if configured
+if CLOUDFRONT_DOMAIN:
+    CSP_SCRIPT_SRC.append(f"https://{CLOUDFRONT_DOMAIN}")
+    CSP_STYLE_SRC.append(f"https://{CLOUDFRONT_DOMAIN}")
+    CSP_IMG_SRC.append(f"https://{CLOUDFRONT_DOMAIN}")
+    CSP_FONT_SRC.append(f"https://{CLOUDFRONT_DOMAIN}")
 # Allow data: URLs for all content types that might use SVG data URLs
 CSP_OBJECT_SRC = ["'none'"]  # Prevent object/embed/applet
 CSP_BASE_URI = ["'self'"]  # Prevent base tag hijacking
@@ -203,8 +214,40 @@ if not DEBUG:
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+# S3 and CloudFront configuration for static files
+USE_S3 = os.getenv("USE_S3", "False").lower() in ("true", "1", "yes", "on")
+
+if USE_S3:
+    # AWS S3 settings
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_ACCESS_KEY_ID = os.getenv("AWS_S3_ACCESS_KEY_ID")
+    AWS_S3_SECRET_ACCESS_KEY = os.getenv("AWS_S3_SECRET_ACCESS_KEY")
+    AWS_S3_REGION_NAME = os.getenv("AWS_REGION", "us-east-1")
+
+    # CloudFront settings
+    AWS_CLOUDFRONT_DOMAIN = os.getenv("AWS_CLOUDFRONT_DOMAIN")
+    if AWS_CLOUDFRONT_DOMAIN:
+        AWS_S3_CUSTOM_DOMAIN = AWS_CLOUDFRONT_DOMAIN
+    else:
+        AWS_S3_CUSTOM_DOMAIN = os.getenv(
+            "AWS_S3_CUSTOM_DOMAIN", f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+        )
+
+    # S3 static settings
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=86400",  # 1 day
+    }
+    AWS_DEFAULT_ACL = None  # Use bucket policy instead
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_QUERYSTRING_AUTH = False
+
+    # Static files storage
+    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+else:
+    # Local development settings
+    STATIC_URL = "static/"
+    STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

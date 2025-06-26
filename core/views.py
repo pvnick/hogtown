@@ -28,6 +28,11 @@ def health_check(request):
     return HttpResponse("OK", content_type="text/plain")
 
 
+def landing_page(request):
+    """Landing page with hero section featuring the Last Supper image."""
+    return render(request, "core/landing.html")
+
+
 def parish_directory(request):
     """Main view for parish directory with CloudWatch debugging."""
     import traceback
