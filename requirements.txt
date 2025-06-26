@@ -58,7 +58,7 @@ python-dateutil==2.8.2
 python-dotenv==1.0.0
 PyYAML==6.0.2
 regex==2024.11.6
-requests==2.32.3
+requests==2.32.4
 rich==14.0.0
 ruamel.yaml==0.18.13
 ruamel.yaml.clib==0.2.12
@@ -77,4 +77,4 @@ tomlkit==0.13.3
 tqdm==4.67.1
 typer==0.16.0
 typing_extensions==4.14.0
-urllib3==2.4.0
+urllib3==2.5.0
