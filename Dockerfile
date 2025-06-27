@@ -17,7 +17,7 @@ RUN pip install --upgrade pip && \
 
 COPY . .
 
-RUN python manage.py collectstatic --noinput || true
+# collectstatic moved to entrypoint.sh where S3 credentials are available
 
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser

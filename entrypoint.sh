@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+echo "Collecting static files to S3..."
+# Run collectstatic now that S3 credentials are available from AWS Secrets Manager
+python manage.py collectstatic --noinput || {
+    echo "Warning: collectstatic failed. Static files may not be available."
+}
+
 echo "Checking database migrations..."
 
 # Check if migrations are needed without applying them
