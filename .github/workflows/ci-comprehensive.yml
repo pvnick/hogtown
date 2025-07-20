@@ -287,6 +287,8 @@ jobs:
       USE_S3: True
       AWS_STORAGE_BUCKET_NAME: hogtown-static-files
       AWS_CLOUDFRONT_DOMAIN: static.hogtowncatholic.com
+      AWS_REGION: us-east-1
+      AWS_LOCATION: staging/static
 
     steps:
       - name: Checkout code
@@ -318,6 +320,9 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Collect and upload static files to S3
+        env:
+          AWS_S3_ACCESS_KEY_ID: ${{ secrets.CI_ACCESS_KEY_ID }}
+          AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.CI_SECRET_ACCESS_KEY }}
         run: |
           echo "Collecting static files and uploading to S3..."
           python manage.py collectstatic --noinput --verbosity 2
