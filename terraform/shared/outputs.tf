@@ -142,30 +142,30 @@ output "ecr_repository_arn" {
   description = "ARN of the ECR repository"
 }
 
-# ECR CI/CD User Outputs
-output "ecr_push_user_name" {
-  description = "The name of the auto-generated ECR push IAM user"
-  value       = aws_iam_user.ecr_push_user.name
+# CI/CD User Outputs
+output "ci_user_name" {
+  description = "The name of the auto-generated CI/CD IAM user"
+  value       = aws_iam_user.ci_user.name
 }
 
-output "ecr_push_user_arn" {
-  description = "The ARN of the auto-generated ECR push IAM user"
-  value       = aws_iam_user.ecr_push_user.arn
+output "ci_user_arn" {
+  description = "The ARN of the auto-generated CI/CD IAM user"
+  value       = aws_iam_user.ci_user.arn
 }
 
-output "ecr_push_credentials_secret_arn" {
-  description = "The ARN of the secret containing ECR push credentials"
-  value       = aws_secretsmanager_secret.ecr_push_credentials.arn
+output "ci_credentials_secret_arn" {
+  description = "The ARN of the secret containing CI/CD credentials"
+  value       = aws_secretsmanager_secret.ci_credentials.arn
 }
 
-output "ecr_push_credentials_secret_name" {
-  description = "The name of the secret containing ECR push credentials"
-  value       = aws_secretsmanager_secret.ecr_push_credentials.name
+output "ci_credentials_secret_name" {
+  description = "The name of the secret containing CI/CD credentials"
+  value       = aws_secretsmanager_secret.ci_credentials.name
 }
 
-output "ecr_push_access_key_id" {
-  description = "The auto-generated access key ID for ECR push (sensitive)"
-  value       = aws_iam_access_key.ecr_push_access_key.id
+output "ci_access_key_id" {
+  description = "The auto-generated access key ID for CI/CD (sensitive)"
+  value       = aws_iam_access_key.ci_access_key.id
   sensitive   = true
 }
 

@@ -60,6 +60,11 @@ module "staging_apprunner" {
   observability_enabled    = local.config.observability_enabled
   log_retention_days       = local.config.log_retention_days
 
+  # Environment-specific S3 prefix for static files
+  additional_env_vars = {
+    AWS_LOCATION = "staging/static"
+  }
+
   # Health check configuration
   health_check_path                = local.config.health_check_path
   health_check_healthy_threshold   = local.config.health_check_healthy_threshold

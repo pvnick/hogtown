@@ -410,16 +410,16 @@ After deploying shared infrastructure, you must manually authorize the GitHub co
 
 After deploying the shared infrastructure, configure GitHub Actions:
 
-1. **Retrieve ECR Push Credentials**:
+1. **Retrieve CI Credentials**:
    ```bash
    cd terraform/shared
    
    # Option 1: Get from Terraform outputs
-   terraform output -raw ecr_push_access_key_id
+   terraform output -raw ci_access_key_id
    
    # Option 2: Get from AWS Secrets Manager (includes both keys)
    aws secretsmanager get-secret-value \
-     --secret-id hogtown-ecr-push-credentials \
+     --secret-id hogtown-ci-credentials \
      --query SecretString \
      --output text | jq .
    ```
@@ -428,8 +428,8 @@ After deploying the shared infrastructure, configure GitHub Actions:
    - Navigate to your GitHub repository
    - Go to Settings → Secrets and variables → Actions
    - Add these secrets:
-     - `ECR_PUSH_ACCESS_KEY_ID`
-     - `ECR_PUSH_SECRET_ACCESS_KEY`
+     - `CI_ACCESS_KEY_ID`
+     - `CI_SECRET_ACCESS_KEY`
 
 3. **Verify CI/CD Pipeline**:
    - Push to `main` or `develop` branch

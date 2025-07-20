@@ -400,17 +400,17 @@ The CI/CD pipeline requires AWS credentials to push Docker images to ECR and tri
 
 ### Automated Setup (Recommended)
 
-Terraform automatically creates an IAM user with minimal ECR push permissions and stores the credentials in AWS Secrets Manager. After running `terraform apply` in the shared infrastructure:
+Terraform automatically creates an IAM user with minimal permissions for CI/CD operations (ECR push, App Runner deployments, and S3 static file uploads) and stores the credentials in AWS Secrets Manager. After running `terraform apply` in the shared infrastructure:
 
 1. **Retrieve the auto-generated credentials**:
    ```bash
    # Get the credentials from Terraform output
    cd terraform/shared
-   terraform output -json ecr_push_access_key_id
+   terraform output -json ci_access_key_id
    
    # Or retrieve from AWS Secrets Manager
    aws secretsmanager get-secret-value \
-     --secret-id hogtown-ecr-push-credentials \
+     --secret-id hogtown-ci-credentials \
      --query SecretString \
      --output text | jq .
    ```
@@ -418,8 +418,8 @@ Terraform automatically creates an IAM user with minimal ECR push permissions an
 2. **Add to GitHub Secrets**:
    - Go to your GitHub repository → Settings → Secrets and variables → Actions
    - Add these repository secrets:
-     - `ECR_PUSH_ACCESS_KEY_ID` - The auto-generated access key ID
-     - `ECR_PUSH_SECRET_ACCESS_KEY` - The auto-generated secret access key
+     - `CI_ACCESS_KEY_ID` - The auto-generated access key ID
+     - `CI_SECRET_ACCESS_KEY` - The auto-generated secret access key
 
 ### Manual Setup (Alternative)
 
