@@ -289,6 +289,8 @@ jobs:
       AWS_CLOUDFRONT_DOMAIN: static.hogtowncatholic.com
       AWS_REGION: us-east-1
       AWS_LOCATION: staging/static
+      AWS_S3_ACCESS_KEY_ID: ${{ secrets.CI_ACCESS_KEY_ID }}
+      AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.CI_SECRET_ACCESS_KEY }}
 
     steps:
       - name: Checkout code
@@ -320,10 +322,10 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Collect and upload static files to S3
-        env:
-          AWS_S3_ACCESS_KEY_ID: ${{ secrets.CI_ACCESS_KEY_ID }}
-          AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.CI_SECRET_ACCESS_KEY }}
         run: |
           echo "Collecting static files and uploading to S3..."
+          echo "USE_S3=$USE_S3"
+          echo "AWS_STORAGE_BUCKET_NAME=$AWS_STORAGE_BUCKET_NAME"
+          echo "AWS_LOCATION=$AWS_LOCATION"
           python manage.py collectstatic --noinput --verbosity 2
           echo "Static files uploaded successfully!"
