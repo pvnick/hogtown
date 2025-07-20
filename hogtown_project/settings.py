@@ -234,6 +234,7 @@ if USE_S3:
         )
 
     # S3 static settings
+    AWS_LOCATION = os.getenv("AWS_LOCATION", "static")  # Environment-specific prefix
     AWS_S3_OBJECT_PARAMETERS = {
         "CacheControl": "max-age=86400",  # 1 day
     }
@@ -243,11 +244,17 @@ if USE_S3:
 
     # Static files storage
     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
+    STATIC_ROOT = BASE_DIR / "staticfiles"  # Still needed for collectstatic
 else:
     # Local development settings
     STATIC_URL = "static/"
     STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Static files directories (common for both S3 and local)
+STATICFILES_DIRS = [
+    BASE_DIR / "core" / "static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
