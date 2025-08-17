@@ -110,15 +110,20 @@ git push origin develop  # or main
 
 ### Code Style Configuration
 - Black: Default configuration (line length 88)
-- isort: Compatible with black
-- flake8: Custom configuration in `.flake8` with complexity exclusions
+- isort: Compatible with black profile, configured in `setup.cfg`
+  - Line length: 127 (matches flake8)
+  - Sections: FUTURE, STDLIB, THIRDPARTY, DJANGO, FIRSTPARTY, LOCALFOLDER
+  - Known Django: django
+  - Known first party: core, hogtown_project
+- flake8: Custom configuration in `setup.cfg` with complexity exclusions
 - Django: Follow Django coding standards
 
 ### Common Issues to Avoid
 - Forgetting to run black before commit (causes CI failures)
 - Not activating virtual environment before commands
 - Pushing without running Django checks
-- Missing import sorting with isort
+- Missing import sorting with isort (CI runs `isort --check-only --diff .`)
+- Import order must follow: stdlib → third-party → Django → first-party
 
 ## Custom Domain Configuration
 
@@ -206,7 +211,7 @@ git push origin develop  # or main
 ## CI/CD Pipeline
 
 ### Comprehensive Workflow
-- **Single optimized pipeline**: `ci-comprehensive.yml` handles all validation and deployment
+- **Single optimized pipeline**: `ci.yml` handles all validation and deployment
 - **Smart conditional logic**: Terraform validation only runs when terraform files change
 - **Dependency-based deployment**: Docker images only build if all tests pass
 - **Efficient resource usage**: Eliminates duplicate jobs across workflows
