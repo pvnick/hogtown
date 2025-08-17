@@ -1,4 +1,4 @@
-name: Comprehensive CI/CD
+name: CI/CD
 
 on:
   push:
@@ -52,9 +52,6 @@ jobs:
 
       - name: Run migrations
         run: python manage.py migrate
-
-      - name: Collect static files
-        run: python manage.py collectstatic --noinput
 
       - name: Run tests with coverage
         run: |
@@ -327,5 +324,6 @@ jobs:
           echo "USE_S3=$USE_S3"
           echo "AWS_STORAGE_BUCKET_NAME=$AWS_STORAGE_BUCKET_NAME"
           echo "AWS_LOCATION=$AWS_LOCATION"
+          python manage.py debug_s3_collectstatic
           python manage.py collectstatic --noinput --verbosity 2
           echo "Static files uploaded successfully!"
