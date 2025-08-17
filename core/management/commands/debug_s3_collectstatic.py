@@ -17,9 +17,16 @@ class Command(BaseCommand):
 
         # Static files settings
         self.stdout.write("\nStatic Files Settings:")
-        self.stdout.write(
-            f"STATICFILES_STORAGE: {getattr(settings, 'STATICFILES_STORAGE', 'Not set')}"
-        )
+        # Check for new STORAGES configuration (Django 5.2+)
+        storages = getattr(settings, 'STORAGES', {})
+        if 'staticfiles' in storages:
+            self.stdout.write(
+                f"STORAGES['staticfiles']['BACKEND']: {storages['staticfiles'].get('BACKEND', 'Not set')}"
+            )
+        else:
+            self.stdout.write(
+                f"STATICFILES_STORAGE: {getattr(settings, 'STATICFILES_STORAGE', 'Not set')}"
+            )
         self.stdout.write(f"STATIC_ROOT: {getattr(settings, 'STATIC_ROOT', 'Not set')}")
         self.stdout.write(f"STATIC_URL: {getattr(settings, 'STATIC_URL', 'Not set')}")
         self.stdout.write(

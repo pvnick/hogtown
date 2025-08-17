@@ -242,12 +242,27 @@ if USE_S3:
     AWS_S3_FILE_OVERWRITE = False
     AWS_QUERYSTRING_AUTH = False
 
-    # Static files storage
-    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    # Static files storage - Django 5.2+ uses STORAGES configuration
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
+        },
+    }
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
     STATIC_ROOT = BASE_DIR / "staticfiles"  # Still needed for collectstatic
 else:
     # Local development settings
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
     STATIC_URL = "static/"
     STATIC_ROOT = BASE_DIR / "staticfiles"
 
