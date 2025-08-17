@@ -108,6 +108,23 @@ git commit -m "Your commit message"
 git push origin develop  # or main
 ```
 
+**CRITICAL**: Always monitor CI after pushing
+- After `git push`, immediately use `gh run watch` to monitor the CI pipeline
+- Watch for failures in any job (Django Tests, Code Quality, Security Scan, Build & Deploy)
+- If CI fails, Claude should automatically investigate and fix issues:
+  - **Code Quality failures**: Run black/isort locally and push formatting fixes
+  - **Security vulnerabilities**: Update vulnerable packages to secure versions
+  - **Test failures**: Debug and fix failing tests
+  - **Build failures**: Fix Docker/dependency issues
+- Never leave CI in a failed state - always resolve issues or revert changes
+- Use `gh run view <run-id> --log` to examine failure details
+- Common CI commands:
+  ```bash
+  gh run list --branch develop --limit 5  # Recent runs
+  gh run watch <run-id>                    # Watch specific run
+  gh run view <run-id> --log              # View full logs
+  ```
+
 ### Code Style Configuration
 - Black: Default configuration (line length 88)
 - isort: Compatible with black profile, configured in `setup.cfg`
@@ -124,6 +141,8 @@ git push origin develop  # or main
 - Pushing without running Django checks
 - Missing import sorting with isort (CI runs `isort --check-only --diff .`)
 - Import order must follow: stdlib → third-party → Django → first-party
+- **NOT monitoring CI after push** - this is critical and must always be done
+- Leaving CI in failed state without investigation and resolution
 
 ## Custom Domain Configuration
 
